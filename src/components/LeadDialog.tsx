@@ -85,6 +85,27 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
     setLoading(true);
 
     try {
+      // Check if phone number already exists in another lead
+      if (formData.phone && formData.phone.trim()) {
+        const query = supabase
+          .from("leads")
+          .select("id, name")
+          .eq("phone", formData.phone.trim());
+
+        // If editing, exclude the current lead from the check
+        if (lead) {
+          query.neq("id", lead.id);
+        }
+
+        const { data: existingLeads } = await query;
+
+        if (existingLeads && existingLeads.length > 0) {
+          toast.error(`Este número já está cadastrado para: ${existingLeads[0].name}`);
+          setLoading(false);
+          return;
+        }
+      }
+
       // Get user's profile to get team_id and region_id
       const { data: profile } = await supabase
         .from("profiles")
