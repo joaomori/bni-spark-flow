@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, AlertCircle, Calendar, TrendingUp, CheckCircle, XCircle } from "lucide-react";
+import { Users, AlertCircle, Calendar, TrendingUp, CheckCircle, XCircle, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { addDays, isWithinInterval, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [userName, setUserName] = useState("");
   const [upcomingContacts, setUpcomingContacts] = useState<any[]>([]);
+  const [inProgressLeads, setInProgressLeads] = useState<any[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     new: 0,
@@ -33,6 +35,7 @@ const Dashboard = () => {
       fetchUserProfile();
       fetchStats();
       fetchUpcomingContacts();
+      fetchInProgressLeads();
     }
   }, [user]);
 
@@ -71,6 +74,38 @@ const Dashboard = () => {
     }
   };
 
+  const fetchInProgressLeads = async () => {
+    if (!user) return;
+
+    const inProgressStatuses = [
+      'new',
+      'contacted', 
+      'interview_scheduled',
+      'interview_done',
+      'scheduled_interview',
+      'waiting_return',
+      'future_contact',
+      'waiting_signature',
+      'negotiating'
+    ];
+
+    const { data, error } = await supabase
+      .from("leads")
+      .select(`
+        *,
+        teams (
+          name
+        )
+      `)
+      .in('status', inProgressStatuses)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (!error && data) {
+      setInProgressLeads(data);
+    }
+  };
+
   const fetchStats = async () => {
     try {
       const { data: leads, error } = await supabase.from("leads").select("status");
@@ -106,6 +141,33 @@ const Dashboard = () => {
   };
 
   const conversionRate = stats.total > 0 ? ((stats.closed / stats.total) * 100).toFixed(0) : 0;
+  const inProgressCount = stats.new + stats.contacted + stats.interviewScheduled + 
+    stats.interviewDone + stats.scheduledInterview + stats.waitingReturn + 
+    stats.futureContact + stats.waitingSignature + stats.negotiating;
+
+  const statusColors: Record<string, string> = {
+    new: "bg-accent text-accent-foreground",
+    contacted: "bg-primary text-primary-foreground",
+    interview_scheduled: "bg-warning text-warning-foreground",
+    interview_done: "bg-success text-success-foreground",
+    scheduled_interview: "bg-warning text-warning-foreground",
+    waiting_return: "bg-muted text-muted-foreground",
+    future_contact: "bg-secondary text-secondary-foreground",
+    waiting_signature: "bg-warning text-warning-foreground",
+    negotiating: "bg-warning text-warning-foreground",
+  };
+
+  const statusLabels: Record<string, string> = {
+    new: "Novo Contato",
+    contacted: "Contato Feito",
+    interview_scheduled: "Entrevista Agendada",
+    interview_done: "Entrevista Realizada",
+    scheduled_interview: "Marcou Entrevista",
+    waiting_return: "Aguardando Retorno",
+    future_contact: "Contato Futuro",
+    waiting_signature: "Aguardando Assinatura",
+    negotiating: "Em Negociação",
+  };
 
   const statusDistribution = [
     { name: "Novo Contato", value: stats.new, percentage: ((stats.new / stats.total) * 100).toFixed(1) },
@@ -128,6 +190,63 @@ const Dashboard = () => {
           Bem-vindo(a) ao seu dashboard de gerenciamento de leads.
         </p>
       </div>
+
+      {/* Relatório de Candidaturas em Andamento */}
+      <Card className="shadow-card border-warning/50 bg-gradient-to-br from-warning/5 to-transparent">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-warning">
+              <ClipboardList className="h-5 w-5" />
+              Candidaturas em Andamento
+            </CardTitle>
+            <Badge variant="secondary" className="text-lg px-3 py-1">
+              {inProgressCount} ativos
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {inProgressLeads.length === 0 ? (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Nenhuma candidatura em andamento no momento.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-3">
+              {inProgressLeads.map((lead) => (
+                <div 
+                  key={lead.id} 
+                  className="flex items-center justify-between p-4 bg-card rounded-lg border hover:shadow-md transition-shadow"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold">{lead.name}</p>
+                      <Badge className={statusColors[lead.status] || "bg-secondary"}>
+                        {statusLabels[lead.status] || lead.status}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {lead.teams && (
+                        <span>Equipe: {lead.teams.name}</span>
+                      )}
+                      {lead.phone && (
+                        <span>Tel: {lead.phone}</span>
+                      )}
+                      {lead.next_contact_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Próximo contato: {format(new Date(lead.next_contact_date), "dd/MM/yyyy", { locale: ptBR })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Próximos Contatos */}
       <Card className="shadow-card border-primary/20">
