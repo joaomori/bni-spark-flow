@@ -34,6 +34,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
     name: "",
     email: "",
     phone: "",
+    company: "",
+    position: "",
+    invited_by: "",
     status: "new",
     next_contact_date: "",
     source: "",
@@ -46,6 +49,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         name: lead.name,
         email: lead.email || "",
         phone: lead.phone || "",
+        company: (lead as any).company || "",
+        position: (lead as any).position || "",
+        invited_by: (lead as any).invited_by || "",
         status: lead.status,
         next_contact_date: lead.next_contact_date || "",
         source: lead.source || "",
@@ -56,6 +62,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         name: "",
         email: "",
         phone: "",
+        company: "",
+        position: "",
+        invited_by: "",
         status: "new",
         next_contact_date: "",
         source: "",
@@ -93,6 +102,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         name: formData.name,
         email: formData.email || null,
         phone: formData.phone || null,
+        company: formData.company || null,
+        position: formData.position || null,
+        invited_by: formData.invited_by || null,
         status: formData.status,
         next_contact_date: formData.next_contact_date || null,
         source: formData.source || null,
@@ -145,6 +157,15 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
                 id="email"
@@ -155,11 +176,20 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
+              <Label htmlFor="company">Empresa</Label>
               <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                id="company"
+                value={formData.company}
+                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position">Cargo</Label>
+              <Input
+                id="position"
+                value={formData.position}
+                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                 disabled={loading}
               />
             </div>
@@ -174,13 +204,28 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">Novo</SelectItem>
-                  <SelectItem value="contacted">Contatado</SelectItem>
+                  <SelectItem value="new">Novo Contato</SelectItem>
+                  <SelectItem value="contacted">Contato Feito</SelectItem>
+                  <SelectItem value="interview_scheduled">Entrevista Agendada</SelectItem>
+                  <SelectItem value="interview_done">Entrevista Realizada</SelectItem>
+                  <SelectItem value="scheduled_interview">Marcou Entrevista</SelectItem>
+                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
+                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
+                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
                   <SelectItem value="negotiating">Em Negociação</SelectItem>
-                  <SelectItem value="closed">Fechado</SelectItem>
-                  <SelectItem value="lost">Perdido</SelectItem>
+                  <SelectItem value="closed">Finalizado Ganho</SelectItem>
+                  <SelectItem value="lost">Finalizado Perdido</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="invited_by">Quem Convidou</Label>
+              <Input
+                id="invited_by"
+                value={formData.invited_by}
+                onChange={(e) => setFormData({ ...formData, invited_by: e.target.value })}
+                disabled={loading}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="next_contact_date">Próximo Contato</Label>

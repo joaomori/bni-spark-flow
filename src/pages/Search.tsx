@@ -202,11 +202,17 @@ const Search = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="new">Novo</SelectItem>
-                  <SelectItem value="contacted">Contatado</SelectItem>
+                  <SelectItem value="new">Novo Contato</SelectItem>
+                  <SelectItem value="contacted">Contato Feito</SelectItem>
+                  <SelectItem value="interview_scheduled">Entrevista Agendada</SelectItem>
+                  <SelectItem value="interview_done">Entrevista Realizada</SelectItem>
+                  <SelectItem value="scheduled_interview">Marcou Entrevista</SelectItem>
+                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
+                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
+                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
                   <SelectItem value="negotiating">Em Negociação</SelectItem>
-                  <SelectItem value="closed">Fechado</SelectItem>
-                  <SelectItem value="lost">Perdido</SelectItem>
+                  <SelectItem value="closed">Finalizado Ganho</SelectItem>
+                  <SelectItem value="lost">Finalizado Perdido</SelectItem>
                 </SelectContent>
               </Select>
             </div>

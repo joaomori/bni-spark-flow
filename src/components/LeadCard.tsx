@@ -25,17 +25,29 @@ interface LeadCardProps {
 const statusColors: Record<string, string> = {
   new: "bg-accent text-accent-foreground",
   contacted: "bg-primary text-primary-foreground",
+  interview_scheduled: "bg-warning text-warning-foreground",
+  interview_done: "bg-success text-success-foreground",
+  scheduled_interview: "bg-warning text-warning-foreground",
+  waiting_return: "bg-muted text-muted-foreground",
+  future_contact: "bg-secondary text-secondary-foreground",
+  waiting_signature: "bg-warning text-warning-foreground",
   negotiating: "bg-warning text-warning-foreground",
   closed: "bg-success text-success-foreground",
   lost: "bg-destructive text-destructive-foreground",
 };
 
 const statusLabels: Record<string, string> = {
-  new: "Novo",
-  contacted: "Contatado",
+  new: "Novo Contato",
+  contacted: "Contato Feito",
+  interview_scheduled: "Entrevista Agendada",
+  interview_done: "Entrevista Realizada",
+  scheduled_interview: "Marcou Entrevista",
+  waiting_return: "Aguardando Retorno",
+  future_contact: "Contato Futuro",
+  waiting_signature: "Aguardando Assinatura",
   negotiating: "Em Negociação",
-  closed: "Fechado",
-  lost: "Perdido",
+  closed: "Finalizado Ganho",
+  lost: "Finalizado Perdido",
 };
 
 export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
@@ -60,6 +72,18 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Phone className="h-4 w-4" />
             <span>{lead.phone}</span>
+          </div>
+        )}
+        {(lead as any).company && (
+          <div className="text-sm">
+            <span className="text-muted-foreground">Empresa: </span>
+            <span className="font-medium">{(lead as any).company}</span>
+          </div>
+        )}
+        {(lead as any).position && (
+          <div className="text-sm">
+            <span className="text-muted-foreground">Cargo: </span>
+            <span className="font-medium">{(lead as any).position}</span>
           </div>
         )}
         {lead.next_contact_date && (

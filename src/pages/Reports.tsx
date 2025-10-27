@@ -10,6 +10,11 @@ interface Stats {
   totalLeads: number;
   newLeads: number;
   contacted: number;
+  interviewScheduled: number;
+  interviewDone: number;
+  waitingReturn: number;
+  futureContact: number;
+  waitingSignature: number;
   negotiating: number;
   closed: number;
   lost: number;
@@ -25,6 +30,11 @@ const Reports = () => {
     totalLeads: 0,
     newLeads: 0,
     contacted: 0,
+    interviewScheduled: 0,
+    interviewDone: 0,
+    waitingReturn: 0,
+    futureContact: 0,
+    waitingSignature: 0,
     negotiating: 0,
     closed: 0,
     lost: 0,
@@ -53,6 +63,11 @@ const Reports = () => {
       // Status counts
       const newLeads = leads.filter((l) => l.status === "new").length;
       const contacted = leads.filter((l) => l.status === "contacted").length;
+      const interviewScheduled = leads.filter((l) => l.status === "interview_scheduled").length;
+      const interviewDone = leads.filter((l) => l.status === "interview_done").length;
+      const waitingReturn = leads.filter((l) => l.status === "waiting_return").length;
+      const futureContact = leads.filter((l) => l.status === "future_contact").length;
+      const waitingSignature = leads.filter((l) => l.status === "waiting_signature").length;
       const negotiating = leads.filter((l) => l.status === "negotiating").length;
       const closed = leads.filter((l) => l.status === "closed").length;
       const lost = leads.filter((l) => l.status === "lost").length;
@@ -88,6 +103,11 @@ const Reports = () => {
         totalLeads: leads.length,
         newLeads,
         contacted,
+        interviewScheduled,
+        interviewDone,
+        waitingReturn,
+        futureContact,
+        waitingSignature,
         negotiating,
         closed,
         lost,
@@ -103,14 +123,20 @@ const Reports = () => {
   };
 
   const statusData = [
-    { name: "Novo", value: stats.newLeads, color: "#ef4444" },
-    { name: "Contatado", value: stats.contacted, color: "#3b82f6" },
-    { name: "Negociando", value: stats.negotiating, color: "#eab308" },
-    { name: "Fechado", value: stats.closed, color: "#22c55e" },
-    { name: "Perdido", value: stats.lost, color: "#6b7280" },
+    { name: "Novo Contato", value: stats.newLeads, color: "#ef4444" },
+    { name: "Contato Feito", value: stats.contacted, color: "#3b82f6" },
+    { name: "Entrevista Agendada", value: stats.interviewScheduled, color: "#eab308" },
+    { name: "Entrevista Realizada", value: stats.interviewDone, color: "#22c55e" },
+    { name: "Aguardando Retorno", value: stats.waitingReturn, color: "#6b7280" },
+    { name: "Contato Futuro", value: stats.futureContact, color: "#8b5cf6" },
+    { name: "Aguardando Assinatura", value: stats.waitingSignature, color: "#f97316" },
+    { name: "Em Negociação", value: stats.negotiating, color: "#eab308" },
+    { name: "Finalizado Ganho", value: stats.closed, color: "#22c55e" },
+    { name: "Finalizado Perdido", value: stats.lost, color: "#ef4444" },
   ];
 
   const conversionRate = stats.totalLeads > 0 ? ((stats.closed / stats.totalLeads) * 100).toFixed(1) : 0;
+  const inProgress = stats.negotiating + stats.interviewScheduled + stats.waitingReturn;
 
   return (
     <div className="space-y-6">
@@ -145,11 +171,11 @@ const Reports = () => {
 
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Em Negociação</CardTitle>
+            <CardTitle className="text-sm font-medium">Em Progresso</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loading ? "..." : stats.negotiating}</div>
+            <div className="text-2xl font-bold">{loading ? "..." : inProgress}</div>
             <p className="text-xs text-muted-foreground">Leads ativos</p>
           </CardContent>
         </Card>
