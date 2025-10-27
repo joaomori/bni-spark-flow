@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { UserEditDialog } from "@/components/UserEditDialog";
+import { UserCreateDialog } from "@/components/UserCreateDialog";
 
 interface UserProfile {
   id: string;
@@ -25,6 +25,7 @@ const UsersManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
 
   const fetchUsers = async () => {
@@ -105,11 +106,9 @@ const UsersManagement = () => {
             Gerencie usuários, equipes e permissões
           </p>
         </div>
-        <Button asChild>
-          <Link to="/auth">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Cadastrar Usuário
-          </Link>
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Cadastrar Usuário
         </Button>
       </div>
 
@@ -186,6 +185,14 @@ const UsersManagement = () => {
         open={dialogOpen}
         onOpenChange={handleDialogClose}
         user={editingUser}
+      />
+      
+      <UserCreateDialog
+        open={createDialogOpen}
+        onOpenChange={(open) => {
+          setCreateDialogOpen(open);
+          if (!open) fetchUsers();
+        }}
       />
     </div>
   );
