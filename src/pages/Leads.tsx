@@ -21,6 +21,10 @@ interface Lead {
   source: string | null;
   notes: string | null;
   created_at: string;
+  team_id: string;
+  teams?: {
+    name: string;
+  };
 }
 
 const Leads = () => {
@@ -36,7 +40,12 @@ const Leads = () => {
     try {
       const { data, error } = await supabase
         .from("leads")
-        .select("*")
+        .select(`
+          *,
+          teams (
+            name
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

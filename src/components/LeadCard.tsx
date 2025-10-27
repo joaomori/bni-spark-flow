@@ -14,6 +14,9 @@ interface Lead {
   next_contact_date: string | null;
   source: string | null;
   notes: string | null;
+  teams?: {
+    name: string;
+  };
 }
 
 interface LeadCardProps {
@@ -75,6 +78,12 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {lead.teams && (
+          <div className="text-sm">
+            <span className="text-muted-foreground">Equipe: </span>
+            <span className="font-medium">{lead.teams.name}</span>
+          </div>
+        )}
         {lead.email && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />

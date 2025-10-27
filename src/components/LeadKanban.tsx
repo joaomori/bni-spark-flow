@@ -31,6 +31,9 @@ interface Lead {
   notes: string | null;
   company?: string;
   position?: string;
+  teams?: {
+    name: string;
+  };
 }
 
 interface LeadKanbanProps {
@@ -196,6 +199,12 @@ function DraggableLeadCard({ lead, onClick, isDragging = false }: DraggableLeadC
             </div>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
+            {lead.teams && (
+              <div className="text-xs">
+                <span className="text-muted-foreground">Equipe: </span>
+                <span className="font-medium">{lead.teams.name}</span>
+              </div>
+            )}
             {lead.email && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-3 w-3" />
