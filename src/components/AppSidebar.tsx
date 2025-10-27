@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Users, LogOut, Building2, Menu } from "lucide-react";
+import { Home, Users, LogOut, Building2, Menu, MapPin, UserCog } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,12 @@ import { useAuth } from "@/contexts/AuthContext";
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Leads", url: "/leads", icon: Users },
+];
+
+const adminItems = [
+  { title: "Regiões", url: "/regions", icon: MapPin },
+  { title: "Equipes", url: "/teams", icon: Building2 },
+  { title: "Usuários", url: "/users", icon: UserCog },
 ];
 
 export function AppSidebar() {
@@ -47,6 +53,31 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : ""
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Administração</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
