@@ -52,7 +52,10 @@ const statusLabels: Record<string, string> = {
 
 export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
   return (
-    <Card className="shadow-card hover:shadow-lg transition-shadow">
+    <Card 
+      className="shadow-card hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={() => onEdit(lead)}
+    >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{lead.name}</CardTitle>
@@ -107,7 +110,10 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => onEdit(lead)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(lead);
+            }}
           >
             <Edit className="h-4 w-4 mr-1" />
             Editar
@@ -115,7 +121,10 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onDelete(lead.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(lead.id);
+            }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
