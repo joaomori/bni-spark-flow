@@ -34,7 +34,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
+    <Sidebar collapsible="icon" className="border-r flex flex-col h-screen">
       <div className="p-4 border-b flex items-center justify-between">
         {!collapsed && (
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function AppSidebar() {
         </SidebarTrigger>
       </div>
       
-      <SidebarContent>
+      <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -101,7 +101,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <div className="mt-auto p-4 border-t">
+      <div className="p-4 border-t">
         <Button
           variant="outline"
           className="w-full justify-start"
