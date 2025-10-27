@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, GripVertical } from "lucide-react";
+import { Mail, Phone, Calendar, GripVertical, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -167,6 +167,14 @@ function DraggableLeadCard({ lead, onClick, isDragging = false }: DraggableLeadC
     id: lead.id,
   });
 
+  const handleWhatsApp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (lead.phone) {
+      const cleanPhone = lead.phone.replace(/\D/g, '');
+      window.open(`https://wa.me/${cleanPhone}`, '_blank');
+    }
+  };
+
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -174,52 +182,71 @@ function DraggableLeadCard({ lead, onClick, isDragging = false }: DraggableLeadC
     : undefined;
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <div ref={setNodeRef} style={style}>
       <Card
-        className={`cursor-move hover:shadow-lg transition-shadow ${
+        className={`hover:shadow-lg transition-shadow ${
           dragging || isDragging ? "opacity-50" : ""
         }`}
-        onClick={(e) => {
-          if (!dragging && onClick) {
-            onClick();
-          }
-        }}
       >
-        <CardHeader className="pb-3">
-          <div className="flex items-start gap-2">
-            <GripVertical className="h-4 w-4 text-muted-foreground mt-1" />
-            <CardTitle className="text-sm flex-1">{lead.name}</CardTitle>
+        <div {...listeners} {...attributes} className="cursor-move">
+          <CardHeader className="pb-3">
+            <div className="flex items-start gap-2">
+              <GripVertical className="h-4 w-4 text-muted-foreground mt-1" />
+              <CardTitle className="text-sm flex-1">{lead.name}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {lead.email && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="h-3 w-3" />
+                <span className="truncate text-xs">{lead.email}</span>
+              </div>
+            )}
+            {lead.phone && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Phone className="h-3 w-3" />
+                <span className="text-xs">{lead.phone}</span>
+              </div>
+            )}
+            {lead.company && (
+              <div className="text-xs">
+                <span className="text-muted-foreground">Empresa: </span>
+                <span className="font-medium">{lead.company}</span>
+              </div>
+            )}
+            {lead.next_contact_date && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs">
+                  {format(new Date(lead.next_contact_date), "dd/MM/yyyy", {
+                    locale: ptBR,
+                  })}
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </div>
+        <CardContent className="pt-0 pb-3">
+          <div className="flex gap-2">
+            {lead.phone && (
+              <button
+                className="flex-1 text-xs py-1.5 px-2 rounded-md bg-[#25D366] hover:bg-[#20BA5A] text-white transition-colors flex items-center justify-center gap-1"
+                onClick={handleWhatsApp}
+              >
+                <MessageCircle className="h-3 w-3" />
+                WhatsApp
+              </button>
+            )}
+            <button
+              className="text-xs py-1.5 px-3 rounded-md border hover:bg-accent transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onClick) onClick();
+              }}
+            >
+              Editar
+            </button>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          {lead.email && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Mail className="h-3 w-3" />
-              <span className="truncate text-xs">{lead.email}</span>
-            </div>
-          )}
-          {lead.phone && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Phone className="h-3 w-3" />
-              <span className="text-xs">{lead.phone}</span>
-            </div>
-          )}
-          {lead.company && (
-            <div className="text-xs">
-              <span className="text-muted-foreground">Empresa: </span>
-              <span className="font-medium">{lead.company}</span>
-            </div>
-          )}
-          {lead.next_contact_date && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              <span className="text-xs">
-                {format(new Date(lead.next_contact_date), "dd/MM/yyyy", {
-                  locale: ptBR,
-                })}
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
