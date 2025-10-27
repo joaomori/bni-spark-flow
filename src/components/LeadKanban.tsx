@@ -1,0 +1,227 @@
+import { useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  DragOverEvent,
+  useDraggable,
+  useDroppable,
+} from "@dnd-kit/core";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Mail, Phone, Calendar, GripVertical } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Lead {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  status: string;
+  next_contact_date: string | null;
+  source: string | null;
+  notes: string | null;
+  company?: string;
+  position?: string;
+}
+
+interface LeadKanbanProps {
+  leads: Lead[];
+  onLeadClick: (lead: Lead) => void;
+  onUpdate: () => void;
+}
+
+const statusColumns = [
+  { id: "new", label: "Novo Contato", color: "bg-accent" },
+  { id: "contacted", label: "Contato Feito", color: "bg-primary" },
+  { id: "interview_scheduled", label: "Entrevista Agendada", color: "bg-warning" },
+  { id: "interview_done", label: "Entrevista Realizada", color: "bg-success" },
+  { id: "negotiating", label: "Em Negociação", color: "bg-warning" },
+  { id: "closed", label: "Finalizado Ganho", color: "bg-success" },
+  { id: "lost", label: "Finalizado Perdido", color: "bg-destructive" },
+];
+
+export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const activeLead = activeId ? leads.find((lead) => lead.id === activeId) : null;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const leadId = active.id as string;
+    const newStatus = over.id as string;
+
+    // Check if we're dropping on a column
+    const isColumn = statusColumns.some(col => col.id === newStatus);
+    if (!isColumn) return;
+
+    try {
+      const { error } = await supabase
+        .from("leads")
+        .update({ status: newStatus })
+        .eq("id", leadId);
+
+      if (error) throw error;
+
+      toast.success("Status do lead atualizado");
+      onUpdate();
+    } catch (error) {
+      toast.error("Erro ao atualizar status do lead");
+      console.error(error);
+    }
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      collisionDetection={closestCorners}
+    >
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {statusColumns.map((column) => (
+          <KanbanColumn
+            key={column.id}
+            id={column.id}
+            label={column.label}
+            color={column.color}
+            leads={leads.filter((lead) => lead.status === column.id)}
+            onLeadClick={onLeadClick}
+          />
+        ))}
+      </div>
+
+      <DragOverlay>
+        {activeLead ? <DraggableLeadCard lead={activeLead} isDragging /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
+}
+
+interface KanbanColumnProps {
+  id: string;
+  label: string;
+  color: string;
+  leads: Lead[];
+  onLeadClick: (lead: Lead) => void;
+}
+
+function KanbanColumn({ id, label, color, leads, onLeadClick }: KanbanColumnProps) {
+  const { setNodeRef } = useDroppable({
+    id: id,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className="flex-shrink-0 w-80 bg-muted/50 rounded-lg p-4"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold">{label}</h3>
+        <Badge variant="secondary">{leads.length}</Badge>
+      </div>
+      <div className="space-y-3 min-h-[200px]">
+        {leads.map((lead) => (
+          <DraggableLeadCard
+            key={lead.id}
+            lead={lead}
+            onClick={() => onLeadClick(lead)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface DraggableLeadCardProps {
+  lead: Lead;
+  onClick?: () => void;
+  isDragging?: boolean;
+}
+
+function DraggableLeadCard({ lead, onClick, isDragging = false }: DraggableLeadCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging: dragging } = useDraggable({
+    id: lead.id,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      <Card
+        className={`cursor-move hover:shadow-lg transition-shadow ${
+          dragging || isDragging ? "opacity-50" : ""
+        }`}
+        onClick={(e) => {
+          if (!dragging && onClick) {
+            onClick();
+          }
+        }}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-start gap-2">
+            <GripVertical className="h-4 w-4 text-muted-foreground mt-1" />
+            <CardTitle className="text-sm flex-1">{lead.name}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {lead.email && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Mail className="h-3 w-3" />
+              <span className="truncate text-xs">{lead.email}</span>
+            </div>
+          )}
+          {lead.phone && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Phone className="h-3 w-3" />
+              <span className="text-xs">{lead.phone}</span>
+            </div>
+          )}
+          {lead.company && (
+            <div className="text-xs">
+              <span className="text-muted-foreground">Empresa: </span>
+              <span className="font-medium">{lead.company}</span>
+            </div>
+          )}
+          {lead.next_contact_date && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              <span className="text-xs">
+                {format(new Date(lead.next_contact_date), "dd/MM/yyyy", {
+                  locale: ptBR,
+                })}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
