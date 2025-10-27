@@ -98,40 +98,28 @@ export function UserCreateDialog({ open, onOpenChange }: UserCreateDialogProps) 
     setLoading(true);
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const { data: { session } } = await supabase.auth.getSession();
       
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: fullName,
-          },
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
         },
+        body: JSON.stringify({
+          email,
+          password,
+          full_name: fullName,
+          region_id: regionId,
+          team_id: teamId,
+          roles: selectedRoles
+        })
       });
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error("Erro ao criar usuário");
+      const result = await response.json();
 
-      // Update profile with region and team
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ region_id: regionId, team_id: teamId })
-        .eq("id", authData.user.id);
-
-      if (profileError) throw profileError;
-
-      // Insert roles
-      if (selectedRoles.length > 0) {
-        const { error: rolesError } = await supabase
-          .from("user_roles")
-          .insert(selectedRoles.map((role) => ({ 
-            user_id: authData.user.id, 
-            role: role as "member" | "team_admin" | "regional_admin" | "global_admin" 
-          })));
-
-        if (rolesError) throw rolesError;
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao criar usuário");
       }
 
       toast.success("Usuário criado com sucesso!");
