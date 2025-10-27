@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,8 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signUp, signIn, user } = useAuth();
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
