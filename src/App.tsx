@@ -9,6 +9,8 @@ import { MainLayout } from "@/components/MainLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Leads from "./pages/Leads";
+import Search from "./pages/Search";
+import Reports from "./pages/Reports";
 import Regions from "./pages/Regions";
 import Teams from "./pages/Teams";
 import UsersManagement from "./pages/UsersManagement";
@@ -35,6 +37,8 @@ const App = () => (
             >
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/leads" element={<Leads />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/reports" element={<Reports />} />
               <Route path="/regions" element={<Regions />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/users" element={<UsersManagement />} />

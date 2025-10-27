@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Users, LogOut, Building2, Menu, MapPin, UserCog } from "lucide-react";
+import { Home, Users, LogOut, Building2, Menu, MapPin, UserCog, Search, BarChart3 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,8 @@ import { useAuth } from "@/contexts/AuthContext";
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Leads", url: "/leads", icon: Users },
+  { title: "Busca Avançada", url: "/search", icon: Search },
+  { title: "Relatórios", url: "/reports", icon: BarChart3 },
 ];
 
 const adminItems = [
