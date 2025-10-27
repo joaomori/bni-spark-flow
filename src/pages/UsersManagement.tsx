@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, UserCog } from "lucide-react";
+import { Edit, UserCog, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -104,6 +105,12 @@ const UsersManagement = () => {
             Gerencie usuários, equipes e permissões
           </p>
         </div>
+        <Button asChild>
+          <Link to="/auth">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Cadastrar Usuário
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
