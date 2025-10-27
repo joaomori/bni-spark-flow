@@ -208,11 +208,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                   <SelectItem value="contacted">Contato Feito</SelectItem>
                   <SelectItem value="interview_scheduled">Entrevista Agendada</SelectItem>
                   <SelectItem value="interview_done">Entrevista Realizada</SelectItem>
-                  <SelectItem value="scheduled_interview">Marcou Entrevista</SelectItem>
                   <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
                   <SelectItem value="future_contact">Contato Futuro</SelectItem>
                   <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
-                  <SelectItem value="negotiating">Em Negociação</SelectItem>
                   <SelectItem value="closed">Finalizado Ganho</SelectItem>
                   <SelectItem value="lost">Finalizado Perdido</SelectItem>
                 </SelectContent>
