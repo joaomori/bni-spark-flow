@@ -103,7 +103,7 @@ export function AppSidebar() {
 
       <div className="p-4 border-t">
         <Button
-          variant="outline"
+          variant="destructive"
           className="w-full justify-start"
           onClick={signOut}
         >
