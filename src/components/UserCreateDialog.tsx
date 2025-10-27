@@ -42,6 +42,13 @@ export function UserCreateDialog({ open, onOpenChange }: UserCreateDialogProps) 
   useEffect(() => {
     if (open) {
       fetchRegionsAndTeams();
+      // Reset form when dialog opens
+      setEmail("");
+      setPassword("");
+      setFullName("");
+      setRegionId("");
+      setTeamId("");
+      setSelectedRoles(["member"]);
     }
   }, [open]);
 
