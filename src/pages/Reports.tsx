@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { TrendingUp, Users, Activity, Target } from "lucide-react";
+import { TrendingUp, Users, Activity, Target, Filter } from "lucide-react";
 
 interface Stats {
   totalLeads: number;
@@ -42,16 +43,66 @@ const Reports = () => {
     byMonth: [],
   });
   const [loading, setLoading] = useState(true);
+  const [regions, setRegions] = useState<Array<{ id: string; name: string }>>([]);
+  const [teams, setTeams] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string>("all");
+  const [selectedTeam, setSelectedTeam] = useState<string>("all");
+
+  useEffect(() => {
+    if (user) {
+      fetchRegions();
+      fetchTeams();
+      fetchStats();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchStats();
     }
-  }, [user]);
+  }, [selectedRegion, selectedTeam]);
+
+  const fetchRegions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("regions")
+        .select("id, name")
+        .order("name");
+      
+      if (error) throw error;
+      setRegions(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar regiões:", error);
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("id, name")
+        .order("name");
+      
+      if (error) throw error;
+      setTeams(data || []);
+    } catch (error) {
+      console.error("Erro ao carregar equipes:", error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
-      const { data: leads, error } = await supabase.from("leads").select("*");
+      let query = supabase.from("leads").select("*");
+
+      // Apply filters
+      if (selectedRegion !== "all") {
+        query = query.eq("region_id", selectedRegion);
+      }
+      if (selectedTeam !== "all") {
+        query = query.eq("team_id", selectedTeam);
+      }
+
+      const { data: leads, error } = await query;
 
       if (error) throw error;
 
@@ -144,6 +195,53 @@ const Reports = () => {
         <h1 className="text-3xl font-bold">Relatórios</h1>
         <p className="text-muted-foreground mt-2">Análise completa de desempenho e métricas</p>
       </div>
+
+      {/* Filters */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Região</label>
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas as regiões" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as regiões</SelectItem>
+                  {regions.map((region) => (
+                    <SelectItem key={region.id} value={region.id}>
+                      {region.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Equipe</label>
+              <Select value={selectedTeam} onValueChange={setSelectedTeam}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas as equipes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as equipes</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
