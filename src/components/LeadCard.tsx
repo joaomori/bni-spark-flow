@@ -102,10 +102,10 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
             <span className="font-medium">{(lead as any).company}</span>
           </div>
         )}
-        {(lead as any).position && (
+        {(lead as any).specialty && (
           <div className="text-sm">
-            <span className="text-muted-foreground">Cargo: </span>
-            <span className="font-medium">{(lead as any).position}</span>
+            <span className="text-muted-foreground">Especialidade: </span>
+            <span className="font-medium">{(lead as any).specialty}</span>
           </div>
         )}
         {lead.next_contact_date && (

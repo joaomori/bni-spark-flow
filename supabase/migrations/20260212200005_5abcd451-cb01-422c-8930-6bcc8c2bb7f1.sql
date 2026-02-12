@@ -1,0 +1,1 @@
+ALTER TABLE public.leads RENAME COLUMN position TO specialty;

@@ -27,9 +27,9 @@ export type Database = {
           next_contact_date: string | null
           notes: string | null
           phone: string | null
-          position: string | null
           region_id: string
           source: string | null
+          specialty: string | null
           status: string
           team_id: string
           updated_at: string
@@ -46,9 +46,9 @@ export type Database = {
           next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
-          position?: string | null
           region_id: string
           source?: string | null
+          specialty?: string | null
           status?: string
           team_id: string
           updated_at?: string
@@ -65,9 +65,9 @@ export type Database = {
           next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
-          position?: string | null
           region_id?: string
           source?: string | null
+          specialty?: string | null
           status?: string
           team_id?: string
           updated_at?: string
