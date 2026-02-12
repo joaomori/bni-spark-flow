@@ -35,7 +35,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
     email: "",
     phone: "",
     company: "",
-    position: "",
+    specialty: "",
     invited_by: "",
     status: "new",
     next_contact_date: "",
@@ -50,7 +50,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         email: lead.email || "",
         phone: lead.phone || "",
         company: (lead as any).company || "",
-        position: (lead as any).position || "",
+        specialty: (lead as any).specialty || "",
         invited_by: (lead as any).invited_by || "",
         status: lead.status,
         next_contact_date: lead.next_contact_date || "",
@@ -63,7 +63,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         email: "",
         phone: "",
         company: "",
-        position: "",
+        specialty: "",
         invited_by: "",
         status: "new",
         next_contact_date: "",
@@ -124,7 +124,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         email: formData.email || null,
         phone: formData.phone || null,
         company: formData.company || null,
-        position: formData.position || null,
+        specialty: formData.specialty || null,
         invited_by: formData.invited_by || null,
         status: formData.status,
         next_contact_date: formData.next_contact_date || null,
@@ -206,11 +206,11 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="position">Cargo</Label>
+              <Label htmlFor="specialty">Especialidade</Label>
               <Input
-                id="position"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                id="specialty"
+                value={formData.specialty}
+                onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
                 disabled={loading}
               />
             </div>
