@@ -15,6 +15,7 @@ import Regions from "./pages/Regions";
 import Teams from "./pages/Teams";
 import UsersManagement from "./pages/UsersManagement";
 import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/cadastro" element={<Register />} />
             <Route
               element={
                 <ProtectedRoute>
