@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Users, LogOut, Building2, Menu, MapPin, UserCog, Search, BarChart3 } from "lucide-react";
+import { Home, Users, LogOut, Building2, Menu, MapPin, UserCog, Search, BarChart3, MessageCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const menuItems = [
   { title: "Leads", url: "/leads", icon: Users },
   { title: "Busca Avançada", url: "/search", icon: Search },
   { title: "Relatórios", url: "/reports", icon: BarChart3 },
+  { title: "Relatório WhatsApp", url: "/whatsapp-report", icon: MessageCircle },
 ];
 
 const adminItems = [
