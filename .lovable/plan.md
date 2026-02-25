@@ -1,34 +1,49 @@
+## Relatório para WhatsApp - Coordenador de Afiliação
 
+### Objetivo
 
-## Importar Leads da Planilha para a Equipe Comitiva
+Criar uma nova página acessível pelo menu lateral que exibe os leads pendentes dos últimos 15 dias em formato texto, com botão para copiar o conteúdo e enviar no WhatsApp.
 
-A planilha contém 63 registros de visitantes/leads com as colunas: Data, Nome, Celular, Atividade e Padrinho.
+### Mudanças
 
-### Mapeamento dos campos
+**1. Nova página `src/pages/WhatsAppReport.tsx**`
 
-| Planilha | Campo no sistema |
-|----------|-----------------|
-| Nome | `name` |
-| Cel | `phone` |
-| Atividade | `specialty` |
-| Padrinho | `invited_by` |
-| Data | `created_at` |
+- Busca leads criados nos últimos 15 dias
+- Gera um texto formatado com as informações de cada lead (nome, telefone, especialidade, padrinho, status, data)
+- Exibe o texto em um campo de texto (textarea) de somente leitura
+- Botão "Copiar" que copia o conteúdo para a área de transferência com feedback visual (toast)
+- Inclui cabeçalho com titulo e contagem de leads pendentes
 
-Dados fixos para todos os registros:
-- `team_id`: Comitiva (`15034593-d32b-4139-83de-2a3fc9163a21`)
-- `region_id`: Barretos (`b9b10de3-2360-4ad2-adeb-1f02de7dea4c`)
-- `created_by`: usuario da equipe Comitiva (`95cd540e-ea15-48e3-847f-7a7f1b6fac4a`)
-- `status`: `new`
+**2. Atualizar `src/components/AppSidebar.tsx**`
 
-### Execucao
+- Adicionar novo item "Relatório WhatsApp" no menu principal com ícone `MessageCircle`
+- Link para `/whatsapp-report`
 
-Inserir os 63 leads na tabela `leads` usando queries INSERT diretas (ferramenta de insert do banco). Os registros serao divididos em lotes para garantir que todos sejam inseridos corretamente.
+**3. Atualizar `src/App.tsx**`
 
-Os telefones serao normalizados para manter apenas numeros. Registros sem nome de atividade terao o campo `specialty` como nulo.
+- Importar e adicionar rota `/whatsapp-report` dentro das rotas protegidas
 
-### Detalhes tecnicos
+### Formato do texto gerado
 
-- Serao executadas queries INSERT em lotes de ~20 registros
-- A data original da planilha sera usada como `created_at` para manter o historico
-- Nenhuma alteracao de schema e necessaria - todos os campos ja existem na tabela `leads`
+```text
+📋 RELATÓRIO DE CANDIDATURAS PENDENTES
+📅 Período: DD/MM/YYYY a DD/MM/YYYY
+📊 Total: X candidatos
 
+1. Nome: João Silva
+   📱 Tel: (17) 99999-9999
+   🏢 Atividade: Consultoria
+   👤 Padrinho: Carlos
+   📌 Status: Novo Contato
+   📅 Cadastro: 15/02/2026
+
+2. Nome: Maria Santos
+   ...
+```
+
+### Detalhes técnicos
+
+- Query filtra por `created_at >= 15 dias atrás` e `status NOT IN ('closed', 'lost')`
+- Usa `navigator.clipboard.writeText()` para copiar
+- Reutiliza os mapeamentos de `statusLabels` do `LeadCard`
+- Formatação de datas com `date-fns` e locale `ptBR`
