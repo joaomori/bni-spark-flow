@@ -1,49 +1,29 @@
-## Relatório para WhatsApp - Coordenador de Afiliação
+
+## Excluir Usuários (Admin Global)
 
 ### Objetivo
-
-Criar uma nova página acessível pelo menu lateral que exibe os leads pendentes dos últimos 15 dias em formato texto, com botão para copiar o conteúdo e enviar no WhatsApp.
+Adicionar um botão "Excluir" nos cards de usuários e um diálogo de confirmação, permitindo que administradores globais removam usuários do sistema.
 
 ### Mudanças
 
-**1. Nova página `src/pages/WhatsAppReport.tsx**`
+**1. Nova Edge Function `supabase/functions/delete-user/index.ts`**
+- Recebe o `user_id` a ser excluído
+- Verifica se o usuário autenticado é `global_admin`
+- Usa o service role para chamar `auth.admin.deleteUser()` (que também remove cascata do `user_roles` e `profiles` via FK)
+- Retorna sucesso ou erro
 
-- Busca leads criados nos últimos 15 dias
-- Gera um texto formatado com as informações de cada lead (nome, telefone, especialidade, padrinho, status, data)
-- Exibe o texto em um campo de texto (textarea) de somente leitura
-- Botão "Copiar" que copia o conteúdo para a área de transferência com feedback visual (toast)
-- Inclui cabeçalho com titulo e contagem de leads pendentes
+**2. Atualizar `supabase/config.toml`**
+- Adicionar configuração `[functions.delete-user]` com `verify_jwt = false`
 
-**2. Atualizar `src/components/AppSidebar.tsx**`
-
-- Adicionar novo item "Relatório WhatsApp" no menu principal com ícone `MessageCircle`
-- Link para `/whatsapp-report`
-
-**3. Atualizar `src/App.tsx**`
-
-- Importar e adicionar rota `/whatsapp-report` dentro das rotas protegidas
-
-### Formato do texto gerado
-
-```text
-📋 RELATÓRIO DE CANDIDATURAS PENDENTES
-📅 Período: DD/MM/YYYY a DD/MM/YYYY
-📊 Total: X candidatos
-
-1. Nome: João Silva
-   📱 Tel: (17) 99999-9999
-   🏢 Atividade: Consultoria
-   👤 Padrinho: Carlos
-   📌 Status: Novo Contato
-   📅 Cadastro: 15/02/2026
-
-2. Nome: Maria Santos
-   ...
-```
+**3. Atualizar `src/pages/UsersManagement.tsx`**
+- Adicionar botão "Excluir" (ícone Trash2, vermelho) ao lado do botão "Editar" em cada card de usuário
+- Ao clicar, abre um AlertDialog de confirmação com o nome do usuário
+- Ao confirmar, chama `supabase.functions.invoke('delete-user', { body: { user_id } })`
+- Exibe toast de sucesso/erro e recarrega a lista
 
 ### Detalhes técnicos
 
-- Query filtra por `created_at >= 15 dias atrás` e `status NOT IN ('closed', 'lost')`
-- Usa `navigator.clipboard.writeText()` para copiar
-- Reutiliza os mapeamentos de `statusLabels` do `LeadCard`
-- Formatação de datas com `date-fns` e locale `ptBR`
+- A Edge Function valida o role do chamador consultando `user_roles` com o service role client
+- `auth.admin.deleteUser()` remove o usuário do auth, e os registros em `profiles` e `user_roles` são removidos por cascade (FK `on delete cascade`)
+- O AlertDialog usa os componentes existentes de `@/components/ui/alert-dialog`
+- Impede que o admin exclua a si mesmo (verificação no frontend e backend)
