@@ -1,39 +1,34 @@
 
 
-## Pagina de Cadastro de Membros (nao indexada)
+## Importar Leads da Planilha para a Equipe Comitiva
 
-Criar uma pagina publica `/cadastro` onde membros podem se auto-cadastrar selecionando sua equipe. A pagina nao sera indexada pelos motores de busca.
+A planilha contém 63 registros de visitantes/leads com as colunas: Data, Nome, Celular, Atividade e Padrinho.
 
-### Alteracoes
+### Mapeamento dos campos
 
-**1. Edge Function `register-member`**
-- Nova edge function que recebe nome, email, senha e team_id
-- Usa service role para criar o usuario via `auth.admin.createUser`
-- Busca a `region_id` da equipe selecionada automaticamente
-- Atualiza o profile com `team_id` e `region_id`
-- Insere a role `member` na tabela `user_roles`
-- NAO requer autenticacao (endpoint publico, protegido apenas pela anon key)
+| Planilha | Campo no sistema |
+|----------|-----------------|
+| Nome | `name` |
+| Cel | `phone` |
+| Atividade | `specialty` |
+| Padrinho | `invited_by` |
+| Data | `created_at` |
 
-**2. Pagina `src/pages/Register.tsx`**
-- Formulario com campos: Nome Completo, E-mail, Senha e Equipe (select)
-- Busca todas as equipes agrupadas por regiao para facilitar a selecao
-- Ao submeter, chama a edge function `register-member`
-- Apos sucesso, redireciona para `/auth` com mensagem de confirmacao
-- Link de volta para a pagina de login
+Dados fixos para todos os registros:
+- `team_id`: Comitiva (`15034593-d32b-4139-83de-2a3fc9163a21`)
+- `region_id`: Barretos (`b9b10de3-2360-4ad2-adeb-1f02de7dea4c`)
+- `created_by`: usuario da equipe Comitiva (`95cd540e-ea15-48e3-847f-7a7f1b6fac4a`)
+- `status`: `new`
 
-**3. Rota no `src/App.tsx`**
-- Adicionar rota `/cadastro` apontando para a pagina Register (fora do ProtectedRoute)
+### Execucao
 
-**4. Meta tag noindex no `index.html`**
-- Adicionar `<meta name="robots" content="noindex, nofollow">` diretamente na pagina Register via React Helmet ou um useEffect que manipula o head
-- Alternativa mais simples: usar um componente que injeta a meta tag ao montar
+Inserir os 63 leads na tabela `leads` usando queries INSERT diretas (ferramenta de insert do banco). Os registros serao divididos em lotes para garantir que todos sejam inseridos corretamente.
 
-**5. Link na pagina de login**
-- Adicionar um link discreto na pagina `/auth` para `/cadastro` ("Ainda nao tem conta? Cadastre-se")
+Os telefones serao normalizados para manter apenas numeros. Registros sem nome de atividade terao o campo `specialty` como nulo.
 
 ### Detalhes tecnicos
 
-- A edge function usa `SUPABASE_SERVICE_ROLE_KEY` para criar usuarios e atribuir roles, contornando RLS
-- A equipe carregada via query publica nas tabelas `teams` e `regions` (que ja possuem policies de SELECT para autenticados) -- como o usuario nao esta logado, a edge function buscara os dados das equipes tambem
-- A meta tag `noindex` sera injetada via useEffect no componente Register para nao afetar outras paginas
-- Somente a role `member` sera atribuida, sem opcao de escolha pelo usuario
+- Serao executadas queries INSERT em lotes de ~20 registros
+- A data original da planilha sera usada como `created_at` para manter o historico
+- Nenhuma alteracao de schema e necessaria - todos os campos ja existem na tabela `leads`
+
