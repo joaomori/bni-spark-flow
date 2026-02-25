@@ -20,6 +20,7 @@ const Register = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [teamId, setTeamId] = useState("");
   const [teams, setTeams] = useState<TeamWithRegion[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,12 +56,16 @@ const Register = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !password || !teamId) {
+    if (!fullName || !email || !password || !confirmPassword || !teamId) {
       toast.error("Por favor, preencha todos os campos");
       return;
     }
     if (password.length < 6) {
       toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("As senhas não coincidem");
       return;
     }
 
@@ -132,6 +137,17 @@ const Register = () => {
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Repita a senha"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
               />
             </div>

@@ -39,6 +39,16 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Check if email already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+    const emailExists = existingUsers?.users?.some(u => u.email === email)
+    if (emailExists) {
+      return new Response(
+        JSON.stringify({ error: 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Create user
     const { data: authData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
       email,
