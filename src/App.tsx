@@ -16,6 +16,7 @@ import Teams from "./pages/Teams";
 import UsersManagement from "./pages/UsersManagement";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
+import WhatsAppReport from "./pages/WhatsAppReport";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/regions" element={<Regions />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/users" element={<UsersManagement />} />
+              <Route path="/whatsapp-report" element={<WhatsAppReport />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
