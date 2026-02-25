@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, AlertCircle, Calendar, TrendingUp, CheckCircle, XCircle, ClipboardList } from "lucide-react";
@@ -27,8 +28,11 @@ const Dashboard = () => {
     negotiating: 0,
     closed: 0,
     lost: 0,
+    declined: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [adminAlerts, setAdminAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -36,8 +40,34 @@ const Dashboard = () => {
       fetchStats();
       fetchUpcomingContacts();
       fetchInProgressLeads();
+      checkAdminAndFetchAlerts();
     }
   }, [user]);
+
+  const checkAdminAndFetchAlerts = async () => {
+    if (!user) return;
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+
+    const isAdmin = roles?.some(r => r.role === "global_admin");
+    setIsGlobalAdmin(!!isAdmin);
+
+    if (isAdmin) {
+      const { data: alerts } = await supabase
+        .from("admin_alerts")
+        .select("*")
+        .eq("read", false)
+        .order("created_at", { ascending: false });
+      setAdminAlerts(alerts || []);
+    }
+  };
+
+  const markAlertAsRead = async (alertId: string) => {
+    await supabase.from("admin_alerts").update({ read: true }).eq("id", alertId);
+    setAdminAlerts(prev => prev.filter(a => a.id !== alertId));
+  };
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -130,6 +160,7 @@ const Dashboard = () => {
         negotiating: leads.filter((l) => l.status === "negotiating").length,
         closed: leads.filter((l) => l.status === "closed").length,
         lost: leads.filter((l) => l.status === "lost").length,
+        declined: leads.filter((l) => l.status === "declined").length,
       };
 
       setStats(stats);
@@ -155,6 +186,7 @@ const Dashboard = () => {
     future_contact: "bg-secondary text-secondary-foreground",
     waiting_signature: "bg-warning text-warning-foreground",
     negotiating: "bg-warning text-warning-foreground",
+    declined: "bg-destructive text-destructive-foreground",
   };
 
   const statusLabels: Record<string, string> = {
@@ -167,6 +199,7 @@ const Dashboard = () => {
     future_contact: "Contato Futuro",
     waiting_signature: "Aguardando Assinatura",
     negotiating: "Em Negociação",
+    declined: "Declinado",
   };
 
   const statusDistribution = [
@@ -180,6 +213,7 @@ const Dashboard = () => {
     { name: "Em Negociação", value: stats.negotiating, percentage: ((stats.negotiating / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Ganho", value: stats.closed, percentage: ((stats.closed / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Perdido", value: stats.lost, percentage: ((stats.lost / stats.total) * 100).toFixed(1) },
+    { name: "Declinado", value: stats.declined, percentage: ((stats.declined / stats.total) * 100).toFixed(1) },
   ];
 
   return (
@@ -190,6 +224,27 @@ const Dashboard = () => {
           Bem-vindo(a) ao seu dashboard de gerenciamento de leads.
         </p>
       </div>
+
+      {/* Admin Alerts */}
+      {isGlobalAdmin && adminAlerts.length > 0 && (
+        <div className="space-y-3">
+          {adminAlerts.map((alert) => (
+            <Alert key={alert.id} variant="destructive" className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{alert.message}</AlertDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => markAlertAsRead(alert.id)}
+              >
+                Marcar como lido
+              </Button>
+            </Alert>
+          ))}
+        </div>
+      )}
 
       {/* Relatório de Candidaturas em Andamento */}
       <Card className="shadow-card border-warning/50 bg-gradient-to-br from-warning/5 to-transparent">

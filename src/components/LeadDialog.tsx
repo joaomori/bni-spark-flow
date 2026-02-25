@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { DeclineReasonDialog } from "@/components/DeclineReasonDialog";
 
 interface Lead {
   id: string;
@@ -30,6 +31,8 @@ interface LeadDialogProps {
 export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showDeclineDialog, setShowDeclineDialog] = useState(false);
+  const [pendingDeclineReason, setPendingDeclineReason] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -82,6 +85,12 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
       return;
     }
 
+    // Intercept declined status to ask for reason
+    if (formData.status === "declined" && !pendingDeclineReason) {
+      setShowDeclineDialog(true);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -119,7 +128,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         return;
       }
 
-      const leadData = {
+      const leadData: any = {
         name: formData.name,
         email: formData.email || null,
         phone: formData.phone || null,
@@ -134,6 +143,10 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         region_id: profile.region_id,
         created_by: user.id,
       };
+
+      if (formData.status === "declined" && pendingDeclineReason) {
+        leadData.decline_reason = pendingDeclineReason;
+      }
 
       if (lead) {
         const { error } = await supabase
@@ -150,6 +163,19 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         toast.success("Lead criado com sucesso");
       }
 
+      // If declined with chair_conflict, create admin alert
+      if (formData.status === "declined" && pendingDeclineReason === "chair_conflict") {
+        const leadName = formData.name;
+        const teamName = profile.team_id; // We'll use team_id; ideally fetch team name
+        await supabase.from("admin_alerts").insert([{
+          lead_id: lead?.id || null,
+          alert_type: "chair_conflict",
+          message: `Conflito de Cadeira: Lead "${leadName}" (Tel: ${formData.phone || "N/A"}) foi declinado por conflito de cadeira.`,
+          created_by: user.id,
+        }]);
+      }
+
+      setPendingDeclineReason(null);
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || "Erro ao salvar lead");
@@ -234,6 +260,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                   <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
                   <SelectItem value="closed">Finalizado Ganho</SelectItem>
                   <SelectItem value="lost">Finalizado Perdido</SelectItem>
+                  <SelectItem value="declined">Declinado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -299,6 +326,23 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
             </Button>
           </div>
         </form>
+
+        <DeclineReasonDialog
+          open={showDeclineDialog}
+          onConfirm={(reason) => {
+            setPendingDeclineReason(reason);
+            setShowDeclineDialog(false);
+            // Re-trigger submit
+            setTimeout(() => {
+              const form = document.querySelector('form');
+              form?.requestSubmit();
+            }, 0);
+          }}
+          onCancel={() => {
+            setShowDeclineDialog(false);
+            setFormData({ ...formData, status: lead?.status || "new" });
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
