@@ -58,7 +58,7 @@ export default function WhatsAppReport() {
       text += `📊 Total: ${leads.length} candidato${leads.length !== 1 ? "s" : ""}\n`;
 
       leads.forEach((lead, i) => {
-        text += `\n${i + 1}. Nome: ${lead.name}`;
+        text += `\n\n${i + 1}. Nome: ${lead.name}`;
         if (lead.phone) text += `\n   📱 Tel: ${lead.phone}`;
         if (lead.specialty) text += `\n   🏢 Atividade: ${lead.specialty}`;
         if (lead.invited_by) text += `\n   👤 Padrinho: ${lead.invited_by}`;
