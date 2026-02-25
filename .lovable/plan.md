@@ -1,29 +1,55 @@
 
-## Excluir Usuários (Admin Global)
+
+## Popup de Motivo de Declínio e Alerta para Admins Globais
 
 ### Objetivo
-Adicionar um botão "Excluir" nos cards de usuários e um diálogo de confirmação, permitindo que administradores globais removam usuários do sistema.
+Quando o status de um lead for alterado para "Declinado", abrir um popup perguntando o motivo. Se o motivo selecionado for "Conflito de Cadeira", gerar um alerta visível para administradores globais.
 
-### Mudanças
+### Mudanças no Banco de Dados
 
-**1. Nova Edge Function `supabase/functions/delete-user/index.ts`**
-- Recebe o `user_id` a ser excluído
-- Verifica se o usuário autenticado é `global_admin`
-- Usa o service role para chamar `auth.admin.deleteUser()` (que também remove cascata do `user_roles` e `profiles` via FK)
-- Retorna sucesso ou erro
+**1. Adicionar coluna `decline_reason` na tabela `leads`**
+- Armazena o motivo do declínio (texto livre ou valor padronizado)
 
-**2. Atualizar `supabase/config.toml`**
-- Adicionar configuração `[functions.delete-user]` com `verify_jwt = false`
+**2. Criar tabela `admin_alerts`**
+- Campos: `id`, `lead_id` (referência ao lead), `alert_type` (ex: "chair_conflict"), `message` (texto do alerta), `read` (boolean), `created_by` (quem gerou), `created_at`
+- RLS: apenas global_admins podem visualizar; qualquer autenticado pode inserir
+- Será exibida no Dashboard dos admins globais
 
-**3. Atualizar `src/pages/UsersManagement.tsx`**
-- Adicionar botão "Excluir" (ícone Trash2, vermelho) ao lado do botão "Editar" em cada card de usuário
-- Ao clicar, abre um AlertDialog de confirmação com o nome do usuário
-- Ao confirmar, chama `supabase.functions.invoke('delete-user', { body: { user_id } })`
-- Exibe toast de sucesso/erro e recarrega a lista
+### Mudanças no Frontend
 
-### Detalhes técnicos
+**3. Adicionar status "Declinado" em todos os componentes**
+- Valor interno: `declined`
+- Adicionar nos selects de `LeadDialog`, nos mapas de `statusLabels`/`statusColors` de `LeadCard`, `Dashboard`, `LeadKanban` e `WhatsAppReport`
 
-- A Edge Function valida o role do chamador consultando `user_roles` com o service role client
-- `auth.admin.deleteUser()` remove o usuário do auth, e os registros em `profiles` e `user_roles` são removidos por cascade (FK `on delete cascade`)
-- O AlertDialog usa os componentes existentes de `@/components/ui/alert-dialog`
-- Impede que o admin exclua a si mesmo (verificação no frontend e backend)
+**4. Novo componente `DeclineReasonDialog`**
+- Um AlertDialog/Dialog que aparece quando o status é alterado para "declined"
+- Contém um Select com opções de motivo:
+  - Conflito de Cadeira
+  - Sem Interesse
+  - Indisponibilidade
+  - Outro (com campo de texto livre)
+- Ao confirmar:
+  - Salva o `decline_reason` no lead
+  - Se o motivo for "Conflito de Cadeira", insere um registro na tabela `admin_alerts` com mensagem descritiva (nome do lead, equipe, quem cadastrou)
+
+**5. Integrar o `DeclineReasonDialog` no `LeadDialog`**
+- Interceptar o submit quando o status muda para "declined"
+- Abrir o dialog de motivo antes de salvar
+- Após selecionar o motivo, prosseguir com o salvamento normal
+
+**6. Integrar o `DeclineReasonDialog` no `LeadKanban`**
+- Interceptar o drag-and-drop para a coluna "Declinado"
+- Abrir o dialog de motivo antes de atualizar o status
+
+**7. Exibir alertas no Dashboard para admins globais**
+- Consultar `user_roles` para verificar se o usuário logado é `global_admin`
+- Se sim, buscar alertas não lidos da tabela `admin_alerts`
+- Exibir como cards de alerta no topo do Dashboard com ícone de aviso e botão para marcar como lido
+
+### Detalhes Técnicos
+
+- A tabela `admin_alerts` terá RLS com policy SELECT restrita a `has_role(auth.uid(), 'global_admin')` e policy INSERT para qualquer `authenticated`
+- O componente `DeclineReasonDialog` recebe callbacks `onConfirm(reason)` e `onCancel`
+- No Kanban, o drag para coluna "declined" será interceptado: se o motivo não for fornecido, a mudança de status é cancelada
+- Alertas de "Conflito de Cadeira" incluirão: nome do lead, telefone, equipe e nome de quem cadastrou
+
