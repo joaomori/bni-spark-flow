@@ -39,16 +39,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Check if email already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
-    const emailExists = existingUsers?.users?.some(u => u.email === email)
-    if (emailExists) {
-      return new Response(
-        JSON.stringify({ error: 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
     // Create user
     const { data: authData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -57,7 +47,16 @@ Deno.serve(async (req) => {
       user_metadata: { full_name }
     })
 
-    if (signUpError) throw signUpError
+    if (signUpError) {
+      // Check for duplicate email error
+      if (signUpError.message?.includes('already been registered') || signUpError.message?.includes('already exists') || signUpError.status === 422) {
+        return new Response(
+          JSON.stringify({ error: 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      throw signUpError
+    }
     if (!authData.user) throw new Error('Falha ao criar usuário')
 
     // Update profile with team and region
