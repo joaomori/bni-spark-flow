@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Building2, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -81,6 +82,12 @@ const Auth = () => {
               )}
             </Button>
           </form>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Ainda não tem conta?{" "}
+            <Link to="/cadastro" className="text-primary hover:underline">
+              Cadastre-se
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>

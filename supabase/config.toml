@@ -1,1 +1,7 @@
 project_id = "jbgmysayiddpxoyuciio"
+
+[functions.register-member]
+verify_jwt = false
+
+[functions.get-teams-public]
+verify_jwt = false
