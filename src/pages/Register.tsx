@@ -137,23 +137,27 @@ const Register = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="team">Equipe</Label>
-              <Select value={teamId} onValueChange={setTeamId} disabled={loading || loadingTeams}>
-                <SelectTrigger>
-                  <SelectValue placeholder={loadingTeams ? "Carregando..." : "Selecione sua equipe"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(groupedTeams).map(([regionName, regionTeams]) => (
-                    <SelectGroup key={regionName}>
-                      <SelectLabel>{regionName}</SelectLabel>
-                      {regionTeams.map((team) => (
-                        <SelectItem key={team.id} value={team.id}>
-                          {team.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
+              {loadingTeams ? (
+                <Input disabled placeholder="Carregando equipes..." />
+              ) : (
+                <Select value={teamId || undefined} onValueChange={setTeamId} disabled={loading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione sua equipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(groupedTeams).map(([regionName, regionTeams]) => (
+                      <SelectGroup key={regionName}>
+                        <SelectLabel>{regionName}</SelectLabel>
+                        {regionTeams.map((team) => (
+                          <SelectItem key={team.id} value={team.id}>
+                            {team.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
