@@ -19,6 +19,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DeclineReasonDialog } from "@/components/DeclineReasonDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Lead {
   id: string;
@@ -50,10 +52,14 @@ const statusColumns = [
   { id: "negotiating", label: "Em Negociação", color: "bg-warning" },
   { id: "closed", label: "Finalizado Ganho", color: "bg-success" },
   { id: "lost", label: "Finalizado Perdido", color: "bg-destructive" },
+  { id: "declined", label: "Declinado", color: "bg-destructive" },
 ];
 
 export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
+  const { user } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+  const [pendingDeclineLead, setPendingDeclineLead] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -81,13 +87,38 @@ export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
     const isColumn = statusColumns.some(col => col.id === newStatus);
     if (!isColumn) return;
 
+    // Intercept declined status
+    if (newStatus === "declined") {
+      setPendingDeclineLead(leadId);
+      setDeclineDialogOpen(true);
+      return;
+    }
+
+    await updateLeadStatus(leadId, newStatus);
+  };
+
+  const updateLeadStatus = async (leadId: string, newStatus: string, declineReason?: string) => {
     try {
+      const updateData: any = { status: newStatus };
+      if (declineReason) updateData.decline_reason = declineReason;
+
       const { error } = await supabase
         .from("leads")
-        .update({ status: newStatus })
+        .update(updateData)
         .eq("id", leadId);
 
       if (error) throw error;
+
+      // If chair_conflict, create admin alert
+      if (declineReason === "chair_conflict" && user) {
+        const lead = leads.find(l => l.id === leadId);
+        await supabase.from("admin_alerts").insert([{
+          lead_id: leadId,
+          alert_type: "chair_conflict",
+          message: `Conflito de Cadeira: Lead "${lead?.name || ""}" (Tel: ${lead?.phone || "N/A"}) foi declinado por conflito de cadeira.`,
+          created_by: user.id,
+        }]);
+      }
 
       toast.success("Status do lead atualizado");
       onUpdate();
@@ -120,6 +151,21 @@ export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
       <DragOverlay>
         {activeLead ? <DraggableLeadCard lead={activeLead} isDragging /> : null}
       </DragOverlay>
+
+      <DeclineReasonDialog
+        open={declineDialogOpen}
+        onConfirm={(reason) => {
+          setDeclineDialogOpen(false);
+          if (pendingDeclineLead) {
+            updateLeadStatus(pendingDeclineLead, "declined", reason);
+            setPendingDeclineLead(null);
+          }
+        }}
+        onCancel={() => {
+          setDeclineDialogOpen(false);
+          setPendingDeclineLead(null);
+        }}
+      />
     </DndContext>
   );
 }

@@ -18,6 +18,7 @@ const statusLabels: Record<string, string> = {
   waiting_signature: "Aguardando Assinatura",
   closed: "Finalizado Ganho",
   lost: "Finalizado Perdido",
+  declined: "Declinado",
 };
 
 export default function WhatsAppReport() {

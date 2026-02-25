@@ -14,12 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          created_by: string
+          id: string
+          lead_id: string | null
+          message: string
+          read: boolean
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          created_by: string
+          id?: string
+          lead_id?: string | null
+          message: string
+          read?: boolean
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          lead_id?: string | null
+          message?: string
+          read?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_alerts_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
           company: string | null
           created_at: string
           created_by: string
+          decline_reason: string | null
           email: string | null
           id: string
           invited_by: string | null
@@ -39,6 +78,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           created_by: string
+          decline_reason?: string | null
           email?: string | null
           id?: string
           invited_by?: string | null
@@ -58,6 +98,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           created_by?: string
+          decline_reason?: string | null
           email?: string | null
           id?: string
           invited_by?: string | null

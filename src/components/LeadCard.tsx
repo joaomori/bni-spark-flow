@@ -37,6 +37,7 @@ const statusColors: Record<string, string> = {
   negotiating: "bg-warning text-warning-foreground",
   closed: "bg-success text-success-foreground",
   lost: "bg-destructive text-destructive-foreground",
+  declined: "bg-destructive text-destructive-foreground",
 };
 
 const statusLabels: Record<string, string> = {
@@ -51,6 +52,7 @@ const statusLabels: Record<string, string> = {
   negotiating: "Em Negociação",
   closed: "Finalizado Ganho",
   lost: "Finalizado Perdido",
+  declined: "Declinado",
 };
 
 export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
