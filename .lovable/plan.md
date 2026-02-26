@@ -1,55 +1,34 @@
 
 
-## Popup de Motivo de Declínio e Alerta para Admins Globais
+## Melhorar Alertas de Admin Global no Dashboard
 
 ### Objetivo
-Quando o status de um lead for alterado para "Declinado", abrir um popup perguntando o motivo. Se o motivo selecionado for "Conflito de Cadeira", gerar um alerta visível para administradores globais.
+Transformar a seção de alertas do dashboard em um componente mais robusto e visualmente destacado, com funcionalidades adicionais.
 
-### Mudanças no Banco de Dados
+### Mudanças em `src/pages/Dashboard.tsx`
 
-**1. Adicionar coluna `decline_reason` na tabela `leads`**
-- Armazena o motivo do declínio (texto livre ou valor padronizado)
+**1. Card dedicado para alertas (em vez de simples Alert inline)**
+- Substituir os componentes `Alert` soltos por um `Card` com cabeçalho, contagem de alertas e botao "Marcar todos como lidos"
+- Ícone de sino (Bell) no cabeçalho com badge de contagem
+- Fundo com gradiente vermelho sutil para chamar atenção
 
-**2. Criar tabela `admin_alerts`**
-- Campos: `id`, `lead_id` (referência ao lead), `alert_type` (ex: "chair_conflict"), `message` (texto do alerta), `read` (boolean), `created_by` (quem gerou), `created_at`
-- RLS: apenas global_admins podem visualizar; qualquer autenticado pode inserir
-- Será exibida no Dashboard dos admins globais
+**2. Botao "Marcar todos como lidos"**
+- Adicionar funcao `markAllAlertsAsRead` que faz update em batch de todos os alertas nao lidos
+- Botao no cabeçalho do card, ao lado do titulo
 
-### Mudanças no Frontend
+**3. Detalhes em cada alerta**
+- Exibir data/hora formatada do alerta (`created_at`)
+- Exibir tipo do alerta com badge colorido (ex: "Conflito de Cadeira" em vermelho)
+- Buscar nome de quem criou o alerta (join com `profiles` via `created_by`)
 
-**3. Adicionar status "Declinado" em todos os componentes**
-- Valor interno: `declined`
-- Adicionar nos selects de `LeadDialog`, nos mapas de `statusLabels`/`statusColors` de `LeadCard`, `Dashboard`, `LeadKanban` e `WhatsAppReport`
+**4. Estado vazio melhorado**
+- Quando admin global e sem alertas, mostrar mensagem positiva "Nenhum alerta pendente" com ícone de check
 
-**4. Novo componente `DeclineReasonDialog`**
-- Um AlertDialog/Dialog que aparece quando o status é alterado para "declined"
-- Contém um Select com opções de motivo:
-  - Conflito de Cadeira
-  - Sem Interesse
-  - Indisponibilidade
-  - Outro (com campo de texto livre)
-- Ao confirmar:
-  - Salva o `decline_reason` no lead
-  - Se o motivo for "Conflito de Cadeira", insere um registro na tabela `admin_alerts` com mensagem descritiva (nome do lead, equipe, quem cadastrou)
+### Detalhes Tecnicos
 
-**5. Integrar o `DeclineReasonDialog` no `LeadDialog`**
-- Interceptar o submit quando o status muda para "declined"
-- Abrir o dialog de motivo antes de salvar
-- Após selecionar o motivo, prosseguir com o salvamento normal
-
-**6. Integrar o `DeclineReasonDialog` no `LeadKanban`**
-- Interceptar o drag-and-drop para a coluna "Declinado"
-- Abrir o dialog de motivo antes de atualizar o status
-
-**7. Exibir alertas no Dashboard para admins globais**
-- Consultar `user_roles` para verificar se o usuário logado é `global_admin`
-- Se sim, buscar alertas não lidos da tabela `admin_alerts`
-- Exibir como cards de alerta no topo do Dashboard com ícone de aviso e botão para marcar como lido
-
-### Detalhes Técnicos
-
-- A tabela `admin_alerts` terá RLS com policy SELECT restrita a `has_role(auth.uid(), 'global_admin')` e policy INSERT para qualquer `authenticated`
-- O componente `DeclineReasonDialog` recebe callbacks `onConfirm(reason)` e `onCancel`
-- No Kanban, o drag para coluna "declined" será interceptado: se o motivo não for fornecido, a mudança de status é cancelada
-- Alertas de "Conflito de Cadeira" incluirão: nome do lead, telefone, equipe e nome de quem cadastrou
+- Importar `Bell`, `CheckCheck` do lucide-react
+- Query de alertas passa a incluir join com profiles: `.select("*, profiles:created_by(full_name)")`
+- Nova funcao `markAllAlertsAsRead`: faz `supabase.from("admin_alerts").update({ read: true }).eq("read", false)` e limpa o state
+- Formatacao de data com `format(new Date(alert.created_at), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })`
+- Mapeamento de `alert_type` para labels: `{ chair_conflict: "Conflito de Cadeira" }`
 
