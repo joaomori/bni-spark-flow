@@ -97,10 +97,25 @@ export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
     await updateLeadStatus(leadId, newStatus);
   };
 
-  const updateLeadStatus = async (leadId: string, newStatus: string, declineReason?: string) => {
+  const updateLeadStatus = async (leadId: string, newStatus: string, declineReason?: string, targetTeamId?: string) => {
     try {
       const updateData: any = { status: newStatus };
       if (declineReason) updateData.decline_reason = declineReason;
+
+      // If chair_conflict with a target team, redirect the lead
+      if (declineReason === "chair_conflict" && targetTeamId) {
+        const { data: team } = await supabase
+          .from("teams")
+          .select("region_id")
+          .eq("id", targetTeamId)
+          .single();
+
+        if (team) {
+          updateData.status = "new";
+          updateData.team_id = targetTeamId;
+          updateData.region_id = team.region_id;
+        }
+      }
 
       const { error } = await supabase
         .from("leads")
@@ -115,12 +130,14 @@ export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
         await supabase.from("admin_alerts").insert([{
           lead_id: leadId,
           alert_type: "chair_conflict",
-          message: `Conflito de Cadeira: Lead "${lead?.name || ""}" (Tel: ${lead?.phone || "N/A"}) foi declinado por conflito de cadeira.`,
+          message: `Conflito de Cadeira: Lead "${lead?.name || ""}" (Tel: ${lead?.phone || "N/A"}) foi redirecionado para outra equipe por conflito de cadeira.`,
           created_by: user.id,
         }]);
       }
 
-      toast.success("Status do lead atualizado");
+      toast.success(declineReason === "chair_conflict" && targetTeamId
+        ? "Lead redirecionado para outra equipe"
+        : "Status do lead atualizado");
       onUpdate();
     } catch (error) {
       toast.error("Erro ao atualizar status do lead");
@@ -154,10 +171,10 @@ export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
 
       <DeclineReasonDialog
         open={declineDialogOpen}
-        onConfirm={(reason) => {
+        onConfirm={(reason, targetTeamId) => {
           setDeclineDialogOpen(false);
           if (pendingDeclineLead) {
-            updateLeadStatus(pendingDeclineLead, "declined", reason);
+            updateLeadStatus(pendingDeclineLead, "declined", reason, targetTeamId);
             setPendingDeclineLead(null);
           }
         }}
