@@ -1,34 +1,39 @@
 
 
-## Melhorar Alertas de Admin Global no Dashboard
+## Conflito de Cadeira: Redirecionar Lead para Outra Equipe
 
 ### Objetivo
-Transformar a seção de alertas do dashboard em um componente mais robusto e visualmente destacado, com funcionalidades adicionais.
+Quando o motivo de declinio for "Conflito de Cadeira", exibir um seletor de equipes no dialog. Ao confirmar, o lead sera automaticamente transferido para a equipe selecionada (alterando `team_id` e `region_id`) e o status volta para "new" no pipeline da nova equipe, em vez de ficar como "declined".
 
-### Mudanças em `src/pages/Dashboard.tsx`
+### Mudancas
 
-**1. Card dedicado para alertas (em vez de simples Alert inline)**
-- Substituir os componentes `Alert` soltos por um `Card` com cabeçalho, contagem de alertas e botao "Marcar todos como lidos"
-- Ícone de sino (Bell) no cabeçalho com badge de contagem
-- Fundo com gradiente vermelho sutil para chamar atenção
+**1. `DeclineReasonDialog` -- adicionar seletor de equipe**
+- Quando o motivo selecionado for `chair_conflict`, exibir um Select com as equipes disponiveis
+- Buscar equipes do banco via `supabase.from("teams").select("id, name, region_id")`
+- O callback `onConfirm` passa a enviar tambem o `targetTeamId` quando aplicavel
+- Nova assinatura: `onConfirm(reason: string, targetTeamId?: string)`
 
-**2. Botao "Marcar todos como lidos"**
-- Adicionar funcao `markAllAlertsAsRead` que faz update em batch de todos os alertas nao lidos
-- Botao no cabeçalho do card, ao lado do titulo
+**2. `LeadKanban` -- tratar redirecionamento**
+- Quando o motivo for `chair_conflict` e um `targetTeamId` for fornecido:
+  - Buscar o `region_id` da equipe destino
+  - Atualizar o lead com `status: "new"`, `team_id: targetTeamId`, `region_id` da nova equipe
+  - Criar o alerta de admin normalmente
+- O lead sai da visualizacao atual (pertence a outra equipe agora)
 
-**3. Detalhes em cada alerta**
-- Exibir data/hora formatada do alerta (`created_at`)
-- Exibir tipo do alerta com badge colorido (ex: "Conflito de Cadeira" em vermelho)
-- Buscar nome de quem criou o alerta (join com `profiles` via `created_by`)
+**3. `LeadDialog` -- tratar redirecionamento**
+- Mesma logica: quando `chair_conflict` com equipe destino, atualizar `team_id`, `region_id` e resetar status para "new"
+- Remover a validacao de equipe/regiao do perfil do usuario ao editar um lead existente (corrige o bug do admin global)
 
-**4. Estado vazio melhorado**
-- Quando admin global e sem alertas, mostrar mensagem positiva "Nenhum alerta pendente" com ícone de check
+**4. Correcao do bug de edicao para admins**
+- No `LeadDialog`, ao editar um lead existente, nao buscar `team_id`/`region_id` do perfil do usuario logado
+- Manter os valores originais do lead na edicao
+- Somente exigir equipe/regiao ao criar novo lead
 
 ### Detalhes Tecnicos
 
-- Importar `Bell`, `CheckCheck` do lucide-react
-- Query de alertas passa a incluir join com profiles: `.select("*, profiles:created_by(full_name)")`
-- Nova funcao `markAllAlertsAsRead`: faz `supabase.from("admin_alerts").update({ read: true }).eq("read", false)` e limpa o state
-- Formatacao de data com `format(new Date(alert.created_at), "dd/MM/yyyy 'as' HH:mm", { locale: ptBR })`
-- Mapeamento de `alert_type` para labels: `{ chair_conflict: "Conflito de Cadeira" }`
+- `DeclineReasonDialog` recebe `onConfirm(reason: string, targetTeamId?: string)`
+- Ao buscar equipes, usar query com `region_id` para exibir agrupado ou com nome da regiao
+- No update do lead para chair_conflict: `{ status: "new", team_id: targetTeamId, region_id: teamRegionId, decline_reason: "chair_conflict" }`
+- O alerta de admin incluira a equipe destino na mensagem
+- Na edicao de lead existente no `LeadDialog`, o `leadData` nao incluira `team_id`, `region_id`, `created_by`
 
