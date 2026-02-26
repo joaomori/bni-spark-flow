@@ -33,6 +33,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
   const [loading, setLoading] = useState(false);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
   const [pendingDeclineReason, setPendingDeclineReason] = useState<string | null>(null);
+  const [pendingTargetTeamId, setPendingTargetTeamId] = useState<string | undefined>(undefined);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -115,19 +116,6 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         }
       }
 
-      // Get user's profile to get team_id and region_id
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("team_id, region_id")
-        .eq("id", user.id)
-        .single();
-
-      if (!profile?.team_id || !profile?.region_id) {
-        toast.error("Usuário não está associado a uma equipe e região");
-        setLoading(false);
-        return;
-      }
-
       const leadData: any = {
         name: formData.name,
         email: formData.email || null,
@@ -139,13 +127,29 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         next_contact_date: formData.next_contact_date || null,
         source: formData.source || null,
         notes: formData.notes || null,
-        team_id: profile.team_id,
-        region_id: profile.region_id,
-        created_by: user.id,
       };
 
       if (formData.status === "declined" && pendingDeclineReason) {
         leadData.decline_reason = pendingDeclineReason;
+      }
+
+      // For new leads, get team/region from user profile
+      if (!lead) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("team_id, region_id")
+          .eq("id", user.id)
+          .single();
+
+        if (!profile?.team_id || !profile?.region_id) {
+          toast.error("Usuário não está associado a uma equipe e região");
+          setLoading(false);
+          return;
+        }
+
+        leadData.team_id = profile.team_id;
+        leadData.region_id = profile.region_id;
+        leadData.created_by = user.id;
       }
 
       if (lead) {
@@ -163,19 +167,36 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         toast.success("Lead criado com sucesso");
       }
 
+      // If chair_conflict with target team, redirect the lead
+      if (formData.status === "declined" && pendingDeclineReason === "chair_conflict" && pendingTargetTeamId) {
+        const { data: targetTeam } = await supabase
+          .from("teams")
+          .select("region_id")
+          .eq("id", pendingTargetTeamId)
+          .single();
+
+        if (targetTeam && lead) {
+          await supabase.from("leads").update({
+            status: "new",
+            team_id: pendingTargetTeamId,
+            region_id: targetTeam.region_id,
+            decline_reason: "chair_conflict",
+          }).eq("id", lead.id);
+        }
+      }
+
       // If declined with chair_conflict, create admin alert
       if (formData.status === "declined" && pendingDeclineReason === "chair_conflict") {
-        const leadName = formData.name;
-        const teamName = profile.team_id; // We'll use team_id; ideally fetch team name
         await supabase.from("admin_alerts").insert([{
           lead_id: lead?.id || null,
           alert_type: "chair_conflict",
-          message: `Conflito de Cadeira: Lead "${leadName}" (Tel: ${formData.phone || "N/A"}) foi declinado por conflito de cadeira.`,
+          message: `Conflito de Cadeira: Lead "${formData.name}" (Tel: ${formData.phone || "N/A"}) foi ${pendingTargetTeamId ? "redirecionado para outra equipe" : "declinado"} por conflito de cadeira.`,
           created_by: user.id,
         }]);
       }
 
       setPendingDeclineReason(null);
+      setPendingTargetTeamId(undefined);
       onOpenChange(false);
     } catch (error: any) {
       toast.error(error.message || "Erro ao salvar lead");
@@ -329,8 +350,9 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
 
         <DeclineReasonDialog
           open={showDeclineDialog}
-          onConfirm={(reason) => {
+          onConfirm={(reason, targetTeamId) => {
             setPendingDeclineReason(reason);
+            setPendingTargetTeamId(targetTeamId);
             setShowDeclineDialog(false);
             // Re-trigger submit
             setTimeout(() => {

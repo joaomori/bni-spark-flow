@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 const declineReasons = [
   { value: "chair_conflict", label: "Conflito de Cadeira" },
@@ -25,31 +26,77 @@ const declineReasons = [
   { value: "other", label: "Outro" },
 ];
 
+interface Team {
+  id: string;
+  name: string;
+  region_id: string;
+  region_name?: string;
+}
+
 interface DeclineReasonDialogProps {
   open: boolean;
-  onConfirm: (reason: string) => void;
+  onConfirm: (reason: string, targetTeamId?: string) => void;
   onCancel: () => void;
 }
 
 export function DeclineReasonDialog({ open, onConfirm, onCancel }: DeclineReasonDialogProps) {
   const [reason, setReason] = useState("");
   const [otherText, setOtherText] = useState("");
+  const [targetTeamId, setTargetTeamId] = useState("");
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+
+  useEffect(() => {
+    if (reason === "chair_conflict" && teams.length === 0) {
+      fetchTeams();
+    }
+  }, [reason]);
+
+  const fetchTeams = async () => {
+    setLoadingTeams(true);
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("id, name, region_id, regions(name)")
+        .order("name");
+
+      if (error) throw error;
+
+      setTeams(
+        (data || []).map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          region_id: t.region_id,
+          region_name: t.regions?.name || "Sem região",
+        }))
+      );
+    } catch (err) {
+      console.error("Erro ao buscar equipes:", err);
+    } finally {
+      setLoadingTeams(false);
+    }
+  };
 
   const handleConfirm = () => {
     const finalReason = reason === "other" ? otherText : reason;
     if (!finalReason) return;
-    onConfirm(finalReason);
+    onConfirm(finalReason, reason === "chair_conflict" ? targetTeamId || undefined : undefined);
     setReason("");
     setOtherText("");
+    setTargetTeamId("");
   };
 
   const handleCancel = () => {
     setReason("");
     setOtherText("");
+    setTargetTeamId("");
     onCancel();
   };
 
-  const isValid = reason && (reason !== "other" || otherText.trim().length > 0);
+  const isValid =
+    reason &&
+    (reason !== "other" || otherText.trim().length > 0) &&
+    (reason !== "chair_conflict" || targetTeamId);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleCancel()}>
@@ -76,6 +123,23 @@ export function DeclineReasonDialog({ open, onConfirm, onCancel }: DeclineReason
               </SelectContent>
             </Select>
           </div>
+          {reason === "chair_conflict" && (
+            <div className="space-y-2">
+              <Label>Redirecionar para qual equipe?</Label>
+              <Select value={targetTeamId} onValueChange={setTargetTeamId}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingTeams ? "Carregando..." : "Selecione a equipe destino..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name} ({t.region_name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {reason === "other" && (
             <div className="space-y-2">
               <Label>Descreva o motivo</Label>
