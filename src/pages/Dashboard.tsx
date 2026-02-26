@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, AlertCircle, Calendar, TrendingUp, CheckCircle, XCircle, ClipboardList } from "lucide-react";
+import { Users, AlertCircle, Calendar, TrendingUp, CheckCircle, XCircle, ClipboardList, Bell, CheckCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { addDays, isWithinInterval, format } from "date-fns";
@@ -57,7 +57,7 @@ const Dashboard = () => {
     if (isAdmin) {
       const { data: alerts } = await supabase
         .from("admin_alerts")
-        .select("*")
+        .select("*, profiles:created_by(full_name)")
         .eq("read", false)
         .order("created_at", { ascending: false });
       setAdminAlerts(alerts || []);
@@ -67,6 +67,15 @@ const Dashboard = () => {
   const markAlertAsRead = async (alertId: string) => {
     await supabase.from("admin_alerts").update({ read: true }).eq("id", alertId);
     setAdminAlerts(prev => prev.filter(a => a.id !== alertId));
+  };
+
+  const markAllAlertsAsRead = async () => {
+    await supabase.from("admin_alerts").update({ read: true }).eq("read", false);
+    setAdminAlerts([]);
+  };
+
+  const alertTypeLabels: Record<string, string> = {
+    chair_conflict: "Conflito de Cadeira",
   };
 
   const fetchUserProfile = async () => {
@@ -226,24 +235,77 @@ const Dashboard = () => {
       </div>
 
       {/* Admin Alerts */}
-      {isGlobalAdmin && adminAlerts.length > 0 && (
-        <div className="space-y-3">
-          {adminAlerts.map((alert) => (
-            <Alert key={alert.id} variant="destructive" className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{alert.message}</AlertDescription>
+      {isGlobalAdmin && (
+        <Card className="shadow-card border-destructive/30 bg-gradient-to-br from-destructive/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <div className="relative">
+                  <Bell className="h-5 w-5" />
+                  {adminAlerts.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {adminAlerts.length}
+                    </span>
+                  )}
+                </div>
+                Alertas Administrativos
+              </CardTitle>
+              {adminAlerts.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={markAllAlertsAsRead}
+                  className="flex items-center gap-1"
+                >
+                  <CheckCheck className="h-4 w-4" />
+                  Marcar todos como lidos
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {adminAlerts.length === 0 ? (
+              <div className="flex items-center gap-2 text-muted-foreground py-2">
+                <CheckCircle className="h-5 w-5 text-success" />
+                <span>Nenhum alerta pendente. Tudo certo!</span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => markAlertAsRead(alert.id)}
-              >
-                Marcar como lido
-              </Button>
-            </Alert>
-          ))}
-        </div>
+            ) : (
+              <div className="space-y-3">
+                {adminAlerts.map((alert) => (
+                  <div
+                    key={alert.id}
+                    className="flex items-center justify-between p-4 bg-card rounded-lg border border-destructive/20 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-destructive text-destructive-foreground">
+                          {alertTypeLabels[alert.alert_type] || alert.alert_type}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(alert.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </span>
+                      </div>
+                      <p className="text-sm">{alert.message}</p>
+                      {alert.profiles?.full_name && (
+                        <p className="text-xs text-muted-foreground">
+                          Registrado por: {alert.profiles.full_name}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => markAlertAsRead(alert.id)}
+                      className="ml-2"
+                    >
+                      Marcar como lido
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Relatório de Candidaturas em Andamento */}
