@@ -14,11 +14,9 @@ import { DeclineReasonDialog } from "@/components/DeclineReasonDialog";
 interface Lead {
   id: string;
   name: string;
-  email: string | null;
   phone: string | null;
   status: string;
   next_contact_date: string | null;
-  source: string | null;
   notes: string | null;
 }
 
