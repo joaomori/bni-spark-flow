@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, GripVertical, MessageCircle } from "lucide-react";
+import { Phone, Calendar, GripVertical, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -268,12 +268,6 @@ function DraggableLeadCard({ lead, onClick, isDragging = false }: DraggableLeadC
               <div className="text-xs">
                 <span className="text-muted-foreground">Equipe: </span>
                 <span className="font-medium">{lead.teams.name}</span>
-              </div>
-            )}
-            {lead.email && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-3 w-3" />
-                <span className="truncate text-xs">{lead.email}</span>
               </div>
             )}
             {lead.phone && (

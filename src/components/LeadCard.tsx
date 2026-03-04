@@ -1,18 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Mail, Phone, Calendar, MessageCircle } from "lucide-react";
+import { Edit, Trash2, Phone, Calendar, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface Lead {
   id: string;
   name: string;
-  email: string | null;
   phone: string | null;
   status: string;
   next_contact_date: string | null;
-  source: string | null;
   notes: string | null;
   teams?: {
     name: string;
@@ -26,18 +24,18 @@ interface LeadCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  new: "bg-accent text-accent-foreground",
+  waiting_signature: "bg-warning text-warning-foreground",
+  declined: "bg-warning text-warning-foreground",
+  waiting_return: "bg-muted text-muted-foreground",
   contacted: "bg-primary text-primary-foreground",
+  future_contact: "bg-secondary text-secondary-foreground",
   interview_scheduled: "bg-warning text-warning-foreground",
   interview_done: "bg-success text-success-foreground",
-  scheduled_interview: "bg-warning text-warning-foreground",
-  waiting_return: "bg-muted text-muted-foreground",
-  future_contact: "bg-secondary text-secondary-foreground",
-  waiting_signature: "bg-warning text-warning-foreground",
-  negotiating: "bg-warning text-warning-foreground",
   closed: "bg-success text-success-foreground",
   lost: "bg-destructive text-destructive-foreground",
-  declined: "bg-warning text-warning-foreground",
+  new: "bg-accent text-accent-foreground",
+  negotiating: "bg-warning text-warning-foreground",
+  scheduled_interview: "bg-warning text-warning-foreground",
 };
 
 const statusLabels: Record<string, string> = {
@@ -59,15 +57,13 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (lead.phone) {
-      // Remove non-numeric characters from phone
       const cleanPhone = lead.phone.replace(/\D/g, '');
-      // Open WhatsApp with the phone number
       window.open(`https://wa.me/${cleanPhone}`, '_blank');
     }
   };
 
   return (
-    <Card 
+    <Card
       className="shadow-card hover:shadow-lg transition-shadow cursor-pointer"
       onClick={() => onEdit(lead)}
     >
@@ -84,12 +80,6 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
           <div className="text-sm">
             <span className="text-muted-foreground">Equipe: </span>
             <span className="font-medium">{lead.teams.name}</span>
-          </div>
-        )}
-        {lead.email && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
-            <span className="truncate">{lead.email}</span>
           </div>
         )}
         {lead.phone && (
@@ -114,16 +104,8 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
             <span>
-              {format(new Date(lead.next_contact_date), "dd/MM/yyyy", {
-                locale: ptBR,
-              })}
+              {format(new Date(lead.next_contact_date), "dd/MM/yyyy", { locale: ptBR })}
             </span>
-          </div>
-        )}
-        {lead.source && (
-          <div className="text-sm">
-            <span className="text-muted-foreground">Origem: </span>
-            <span className="font-medium">{lead.source}</span>
           </div>
         )}
         <div className="flex gap-2 pt-2">
@@ -142,20 +124,14 @@ export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
             variant="outline"
             size="sm"
             className={lead.phone ? "" : "flex-1"}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(lead);
-            }}
+            onClick={(e) => { e.stopPropagation(); onEdit(lead); }}
           >
             <Edit className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(lead.id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onDelete(lead.id); }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

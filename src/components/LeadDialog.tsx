@@ -36,14 +36,12 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
   const [pendingTargetTeamId, setPendingTargetTeamId] = useState<string | undefined>(undefined);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
     phone: "",
     company: "",
     specialty: "",
     invited_by: "",
     status: "new",
     next_contact_date: "",
-    source: "",
     notes: "",
   });
 
@@ -51,27 +49,23 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
     if (lead) {
       setFormData({
         name: lead.name,
-        email: lead.email || "",
         phone: lead.phone || "",
         company: (lead as any).company || "",
         specialty: (lead as any).specialty || "",
         invited_by: (lead as any).invited_by || "",
         status: lead.status,
         next_contact_date: lead.next_contact_date || "",
-        source: lead.source || "",
         notes: lead.notes || "",
       });
     } else {
       setFormData({
         name: "",
-        email: "",
         phone: "",
         company: "",
         specialty: "",
         invited_by: "",
         status: "new",
         next_contact_date: "",
-        source: "",
         notes: "",
       });
     }
@@ -118,14 +112,12 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
 
       const leadData: any = {
         name: formData.name,
-        email: formData.email || null,
         phone: formData.phone || null,
         company: formData.company || null,
         specialty: formData.specialty || null,
         invited_by: formData.invited_by || null,
         status: formData.status,
         next_contact_date: formData.next_contact_date || null,
-        source: formData.source || null,
         notes: formData.notes || null,
       };
 
@@ -234,16 +226,6 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="company">Empresa</Label>
               <Input
                 id="company"
@@ -303,15 +285,6 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, next_contact_date: e.target.value })
                 }
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="source">Origem</Label>
-              <Input
-                id="source"
-                value={formData.source}
-                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
                 disabled={loading}
               />
             </div>
