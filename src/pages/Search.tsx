@@ -14,28 +14,39 @@ import { Badge } from "@/components/ui/badge";
 interface Lead {
   id: string;
   name: string;
-  email: string | null;
   phone: string | null;
   status: string;
   next_contact_date: string | null;
-  source: string | null;
   notes: string | null;
   created_at: string;
+}
+
+interface Team {
+  id: string;
+  name: string;
 }
 
 const Search = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [filters, setFilters] = useState({
     name: "",
-    email: "",
     phone: "",
     status: "",
-    source: "",
+    team_id: "",
     dateFrom: "",
     dateTo: "",
   });
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      const { data } = await supabase.from("teams").select("id, name").order("name");
+      setTeams(data || []);
+    };
+    if (user) fetchTeams();
+  }, [user]);
 
   const searchLeads = async () => {
     if (!user) return;
@@ -44,27 +55,12 @@ const Search = () => {
     try {
       let query = supabase.from("leads").select("*");
 
-      if (filters.name) {
-        query = query.ilike("name", `%${filters.name}%`);
-      }
-      if (filters.email) {
-        query = query.ilike("email", `%${filters.email}%`);
-      }
-      if (filters.phone) {
-        query = query.ilike("phone", `%${filters.phone}%`);
-      }
-      if (filters.status) {
-        query = query.eq("status", filters.status);
-      }
-      if (filters.source) {
-        query = query.ilike("source", `%${filters.source}%`);
-      }
-      if (filters.dateFrom) {
-        query = query.gte("created_at", filters.dateFrom);
-      }
-      if (filters.dateTo) {
-        query = query.lte("created_at", filters.dateTo);
-      }
+      if (filters.name) query = query.ilike("name", `%${filters.name}%`);
+      if (filters.phone) query = query.ilike("phone", `%${filters.phone}%`);
+      if (filters.status && filters.status !== "all") query = query.eq("status", filters.status);
+      if (filters.team_id && filters.team_id !== "all") query = query.eq("team_id", filters.team_id);
+      if (filters.dateFrom) query = query.gte("created_at", filters.dateFrom);
+      if (filters.dateTo) query = query.lte("created_at", filters.dateTo);
 
       const { data, error } = await query.order("created_at", { ascending: false });
 
@@ -83,15 +79,7 @@ const Search = () => {
   };
 
   const clearFilters = () => {
-    setFilters({
-      name: "",
-      email: "",
-      phone: "",
-      status: "",
-      source: "",
-      dateFrom: "",
-      dateTo: "",
-    });
+    setFilters({ name: "", phone: "", status: "", team_id: "", dateFrom: "", dateTo: "" });
     setLeads([]);
   };
 
@@ -101,13 +89,11 @@ const Search = () => {
       return;
     }
 
-    const headers = ["Nome", "Email", "Telefone", "Status", "Origem", "Data de Criação"];
+    const headers = ["Nome", "Telefone", "Status", "Data de Criação"];
     const rows = leads.map((lead) => [
       lead.name,
-      lead.email || "",
       lead.phone || "",
       lead.status,
-      lead.source || "",
       new Date(lead.created_at).toLocaleDateString("pt-BR"),
     ]);
 
@@ -133,7 +119,6 @@ const Search = () => {
     try {
       const { error } = await supabase.from("leads").delete().eq("id", id);
       if (error) throw error;
-
       toast.success("Lead excluído com sucesso");
       searchLeads();
     } catch (error: any) {
@@ -176,16 +161,6 @@ const Search = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@exemplo.com"
-                value={filters.email}
-                onChange={(e) => setFilters({ ...filters, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="phone">Telefone</Label>
               <Input
                 id="phone"
@@ -202,28 +177,32 @@ const Search = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="new">Novo Contato</SelectItem>
+                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
+                  <SelectItem value="declined">Aguardando Oportunidade</SelectItem>
+                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
                   <SelectItem value="contacted">Contato Feito</SelectItem>
+                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
                   <SelectItem value="interview_scheduled">Entrevista Agendada</SelectItem>
                   <SelectItem value="interview_done">Entrevista Realizada</SelectItem>
-                  <SelectItem value="scheduled_interview">Marcou Entrevista</SelectItem>
-                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
-                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
-                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
-                  <SelectItem value="negotiating">Em Negociação</SelectItem>
                   <SelectItem value="closed">Finalizado Ganho</SelectItem>
                   <SelectItem value="lost">Finalizado Perdido</SelectItem>
+                  <SelectItem value="new">Novo Contato</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="source">Origem</Label>
-              <Input
-                id="source"
-                placeholder="Ex: Indicação, Site"
-                value={filters.source}
-                onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-              />
+              <Label htmlFor="team">Equipe</Label>
+              <Select value={filters.team_id} onValueChange={(value) => setFilters({ ...filters, team_id: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas as equipes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="dateFrom">Data Inicial</Label>
@@ -261,9 +240,7 @@ const Search = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">
               Resultados
-              <Badge variant="secondary" className="ml-2">
-                {leads.length}
-              </Badge>
+              <Badge variant="secondary" className="ml-2">{leads.length}</Badge>
             </h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
