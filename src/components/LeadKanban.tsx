@@ -25,11 +25,9 @@ import { useAuth } from "@/contexts/AuthContext";
 interface Lead {
   id: string;
   name: string;
-  email: string | null;
   phone: string | null;
   status: string;
   next_contact_date: string | null;
-  source: string | null;
   notes: string | null;
   company?: string;
   position?: string;
