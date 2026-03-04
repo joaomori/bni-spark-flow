@@ -45,14 +45,16 @@ interface LeadKanbanProps {
 }
 
 const statusColumns = [
-  { id: "new", label: "Novo Contato", color: "bg-accent" },
+  { id: "waiting_signature", label: "Aguardando Assinatura", color: "bg-warning" },
+  { id: "declined", label: "Aguardando Oportunidade", color: "bg-warning" },
+  { id: "waiting_return", label: "Aguardando Retorno", color: "bg-muted" },
   { id: "contacted", label: "Contato Feito", color: "bg-primary" },
+  { id: "future_contact", label: "Contato Futuro", color: "bg-secondary" },
   { id: "interview_scheduled", label: "Entrevista Agendada", color: "bg-warning" },
   { id: "interview_done", label: "Entrevista Realizada", color: "bg-success" },
-  { id: "negotiating", label: "Em Negociação", color: "bg-warning" },
   { id: "closed", label: "Finalizado Ganho", color: "bg-success" },
   { id: "lost", label: "Finalizado Perdido", color: "bg-destructive" },
-  { id: "declined", label: "Declinado", color: "bg-destructive" },
+  { id: "new", label: "Novo Contato", color: "bg-accent" },
 ];
 
 export function LeadKanban({ leads, onLeadClick, onUpdate }: LeadKanbanProps) {
