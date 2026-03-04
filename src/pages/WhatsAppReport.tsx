@@ -9,16 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useToast } from "@/hooks/use-toast";
 
 const statusLabels: Record<string, string> = {
-  new: "Novo Contato",
+  waiting_signature: "Aguardando Assinatura",
+  declined: "Aguardando Oportunidade",
+  waiting_return: "Aguardando Retorno",
   contacted: "Contato Feito",
+  future_contact: "Contato Futuro",
   interview_scheduled: "Entrevista Agendada",
   interview_done: "Entrevista Realizada",
-  waiting_return: "Aguardando Retorno",
-  future_contact: "Contato Futuro",
-  waiting_signature: "Aguardando Assinatura",
   closed: "Finalizado Ganho",
   lost: "Finalizado Perdido",
-  declined: "Declinado",
+  new: "Novo Contato",
+  negotiating: "Em Negociação",
 };
 
 export default function WhatsAppReport() {

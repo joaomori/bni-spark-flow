@@ -102,9 +102,9 @@ export function DeclineReasonDialog({ open, onConfirm, onCancel }: DeclineReason
     <Dialog open={open} onOpenChange={(o) => !o && handleCancel()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Motivo do Declínio</DialogTitle>
+          <DialogTitle>Aguardando Oportunidade</DialogTitle>
           <DialogDescription>
-            Selecione o motivo pelo qual este lead foi declinado.
+            Selecione o motivo pelo qual este lead está aguardando oportunidade.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">

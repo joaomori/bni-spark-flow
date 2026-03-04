@@ -272,16 +272,16 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">Novo Contato</SelectItem>
+                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
+                  <SelectItem value="declined">Aguardando Oportunidade</SelectItem>
+                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
                   <SelectItem value="contacted">Contato Feito</SelectItem>
+                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
                   <SelectItem value="interview_scheduled">Entrevista Agendada</SelectItem>
                   <SelectItem value="interview_done">Entrevista Realizada</SelectItem>
-                  <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
-                  <SelectItem value="future_contact">Contato Futuro</SelectItem>
-                  <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
                   <SelectItem value="closed">Finalizado Ganho</SelectItem>
                   <SelectItem value="lost">Finalizado Perdido</SelectItem>
-                  <SelectItem value="declined">Declinado</SelectItem>
+                  <SelectItem value="new">Novo Contato</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -195,20 +195,22 @@ const Dashboard = () => {
     future_contact: "bg-secondary text-secondary-foreground",
     waiting_signature: "bg-warning text-warning-foreground",
     negotiating: "bg-warning text-warning-foreground",
-    declined: "bg-destructive text-destructive-foreground",
+    declined: "bg-warning text-warning-foreground",
   };
 
   const statusLabels: Record<string, string> = {
-    new: "Novo Contato",
+    waiting_signature: "Aguardando Assinatura",
+    declined: "Aguardando Oportunidade",
+    waiting_return: "Aguardando Retorno",
     contacted: "Contato Feito",
+    future_contact: "Contato Futuro",
     interview_scheduled: "Entrevista Agendada",
     interview_done: "Entrevista Realizada",
+    closed: "Finalizado Ganho",
+    lost: "Finalizado Perdido",
+    new: "Novo Contato",
     scheduled_interview: "Marcou Entrevista",
-    waiting_return: "Aguardando Retorno",
-    future_contact: "Contato Futuro",
-    waiting_signature: "Aguardando Assinatura",
     negotiating: "Em Negociação",
-    declined: "Declinado",
   };
 
   const statusDistribution = [
@@ -222,7 +224,7 @@ const Dashboard = () => {
     { name: "Em Negociação", value: stats.negotiating, percentage: ((stats.negotiating / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Ganho", value: stats.closed, percentage: ((stats.closed / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Perdido", value: stats.lost, percentage: ((stats.lost / stats.total) * 100).toFixed(1) },
-    { name: "Declinado", value: stats.declined, percentage: ((stats.declined / stats.total) * 100).toFixed(1) },
+    { name: "Aguardando Oportunidade", value: stats.declined, percentage: ((stats.declined / stats.total) * 100).toFixed(1) },
   ];
 
   return (

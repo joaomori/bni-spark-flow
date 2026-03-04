@@ -37,22 +37,22 @@ const statusColors: Record<string, string> = {
   negotiating: "bg-warning text-warning-foreground",
   closed: "bg-success text-success-foreground",
   lost: "bg-destructive text-destructive-foreground",
-  declined: "bg-destructive text-destructive-foreground",
+  declined: "bg-warning text-warning-foreground",
 };
 
 const statusLabels: Record<string, string> = {
-  new: "Novo Contato",
+  waiting_signature: "Aguardando Assinatura",
+  declined: "Aguardando Oportunidade",
+  waiting_return: "Aguardando Retorno",
   contacted: "Contato Feito",
+  future_contact: "Contato Futuro",
   interview_scheduled: "Entrevista Agendada",
   interview_done: "Entrevista Realizada",
-  scheduled_interview: "Marcou Entrevista",
-  waiting_return: "Aguardando Retorno",
-  future_contact: "Contato Futuro",
-  waiting_signature: "Aguardando Assinatura",
-  negotiating: "Em Negociação",
   closed: "Finalizado Ganho",
   lost: "Finalizado Perdido",
-  declined: "Declinado",
+  new: "Novo Contato",
+  scheduled_interview: "Marcou Entrevista",
+  negotiating: "Em Negociação",
 };
 
 export function LeadCard({ lead, onEdit, onDelete }: LeadCardProps) {
