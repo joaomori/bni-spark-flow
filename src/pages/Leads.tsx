@@ -125,10 +125,12 @@ const Leads = () => {
     }
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setEditingLead(null);
-    fetchLeads();
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      setDialogOpen(false);
+      setEditingLead(null);
+      fetchLeads();
+    }
   };
 
   const showTeamFilter = userRole === "global_admin" || userRole === "regional_admin";
