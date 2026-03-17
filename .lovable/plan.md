@@ -1,35 +1,31 @@
 
 
-## Plano: Importar leads da planilha Comitiva
+## Problema: Status e observações não atualizam ao editar lead
 
-### Dados identificados
-- **Equipe destino**: Comitiva (team_id: `15034593-d32b-4139-83de-2a3fc9163a21`, region_id: `b9b10de3-2360-4ad2-adeb-1f02de7dea4c`)
-- **Planilha**: ~200+ registros com nome, empresa, especialidade, quem convidou, telefone e status
-- **Membro criador**: perfil existente da equipe Comitiva
+### Causa raiz
+O `useEffect` no `LeadDialog` que inicializa o formulário depende apenas de `[lead]`. Como o Radix Dialog mantém o conteúdo montado mesmo quando `open=false`, e o React pode não detectar mudança de referência do `lead` corretamente em todos os cenários, o formulário pode não re-inicializar com os dados atualizados ao reabrir o dialog.
 
-### Mapeamento de status
-| Planilha | Sistema |
-|----------|---------|
-| Membro / Pago | `closed` (Finalizado Ganho) |
-| Não teve interesse / Não é o momento | `lost` (Finalizado Perdido) |
-| Conflito de cadeira | `declined` (Aguardando Oportunidade) + `decline_reason` |
-| Aguardando pagamento / Assinatura de contrato | `waiting_signature` |
-| Entrevista realizada | `interview_done` |
-| Sem retorno / Não foi na reunião / Não retornou | `waiting_return` |
-| Foi para outro grupo (Raízes etc) | `lost` |
-| Vazio / Em andamento | `new` |
+### Correção
 
-### Processo
-1. Normalizar telefones (remover espacos, tracos, parenteses) para comparar com os ~95 telefones ja existentes na base
-2. Excluir registros sem nome ou duplicados por telefone
-3. Inserir leads em lotes via SQL INSERT, preenchendo: `name`, `company`, `specialty`, `invited_by`, `phone`, `status`, `decline_reason` (quando aplicavel), `team_id`, `region_id`, `created_by`
-4. Registros duplicados por telefone serao listados e ignorados
+**`src/components/LeadDialog.tsx`**
+- Adicionar `open` como dependência do `useEffect` que inicializa o formulário:
+  ```tsx
+  useEffect(() => {
+    if (lead && open) {
+      setFormData({ ...from lead... });
+    } else if (!lead) {
+      setFormData({ ...reset... });
+    }
+  }, [lead, open]);
+  ```
+- Isso garante que toda vez que o dialog abre, o formulário é re-populado com os dados mais recentes do lead
 
-### Campos mapeados
-- CONVIDADO → `name`
-- EMPRESA → `company`
-- RAMO DE ATUACAO → `specialty`
-- QUEM CONVIDOU → `invited_by`
-- TELEFONE → `phone`
-- Status (coluna Status + coluna Acao) → `status`
+**`src/pages/Leads.tsx`**
+- Garantir que `handleDialogClose` aguarda o `fetchLeads` antes de permitir nova interação (atualmente não há `await`)
+- O `handleDialogClose` deve passar corretamente o boolean `false` ao invés de ser chamado como callback direto
+
+### Detalhes técnicos
+- O `useEffect` atual com `[lead]` funciona na maioria dos casos, mas pode falhar quando o dialog é reaberto rapidamente antes de `fetchLeads` atualizar o array
+- Adicionando `open` na dependência, o formulário sempre re-inicializa ao abrir, independente da referência do `lead`
+- Mudança mínima, sem impacto em outros componentes
 
