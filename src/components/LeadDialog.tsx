@@ -44,7 +44,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
   });
 
   useEffect(() => {
-    if (lead) {
+    if (lead && open) {
       setFormData({
         name: lead.name,
         phone: lead.phone || "",
@@ -55,7 +55,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         next_contact_date: lead.next_contact_date || "",
         notes: lead.notes || "",
       });
-    } else {
+    } else if (!lead && open) {
       setFormData({
         name: "",
         phone: "",
@@ -67,7 +67,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
         notes: "",
       });
     }
-  }, [lead]);
+  }, [lead, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
