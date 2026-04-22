@@ -197,6 +197,7 @@ const Dashboard = () => {
     waiting_return: "bg-muted text-muted-foreground",
     future_contact: "bg-secondary text-secondary-foreground",
     waiting_signature: "bg-warning text-warning-foreground",
+    waiting_form: "bg-warning text-warning-foreground",
     negotiating: "bg-warning text-warning-foreground",
     declined: "bg-warning text-warning-foreground",
   };
