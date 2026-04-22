@@ -167,6 +167,7 @@ const Dashboard = () => {
         waitingReturn: leads.filter((l) => l.status === "waiting_return").length,
         futureContact: leads.filter((l) => l.status === "future_contact").length,
         waitingSignature: leads.filter((l) => l.status === "waiting_signature").length,
+        waitingForm: leads.filter((l) => l.status === "waiting_form").length,
         negotiating: leads.filter((l) => l.status === "negotiating").length,
         closed: leads.filter((l) => l.status === "closed").length,
         lost: leads.filter((l) => l.status === "lost").length,
