@@ -318,6 +318,7 @@ const Reports = () => {
     { name: "Aguardando Retorno", value: stats.waitingReturn, color: "#6b7280" },
     { name: "Contato Futuro", value: stats.futureContact, color: "#8b5cf6" },
     { name: "Aguardando Assinatura", value: stats.waitingSignature, color: "#f97316" },
+    { name: "Aguardando Formulário", value: stats.waitingForm, color: "#fb923c" },
     { name: "Em Negociação", value: stats.negotiating, color: "#eab308" },
     { name: "Finalizado Ganho", value: stats.closed, color: "#22c55e" },
     { name: "Finalizado Perdido", value: stats.lost, color: "#ef4444" },
