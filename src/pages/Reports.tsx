@@ -51,6 +51,7 @@ const Reports = () => {
     waitingReturn: 0,
     futureContact: 0,
     waitingSignature: 0,
+    waitingForm: 0,
     negotiating: 0,
     closed: 0,
     lost: 0,
