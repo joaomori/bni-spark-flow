@@ -226,6 +226,7 @@ const Dashboard = () => {
     { name: "Aguardando Retorno", value: stats.waitingReturn, percentage: ((stats.waitingReturn / stats.total) * 100).toFixed(1) },
     { name: "Contato Futuro", value: stats.futureContact, percentage: ((stats.futureContact / stats.total) * 100).toFixed(1) },
     { name: "Aguardando Assinatura", value: stats.waitingSignature, percentage: ((stats.waitingSignature / stats.total) * 100).toFixed(1) },
+    { name: "Aguardando Formulário", value: stats.waitingForm, percentage: ((stats.waitingForm / stats.total) * 100).toFixed(1) },
     { name: "Em Negociação", value: stats.negotiating, percentage: ((stats.negotiating / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Ganho", value: stats.closed, percentage: ((stats.closed / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Perdido", value: stats.lost, percentage: ((stats.lost / stats.total) * 100).toFixed(1) },
