@@ -293,6 +293,7 @@ const Reports = () => {
         waitingReturn,
         futureContact,
         waitingSignature,
+        waitingForm,
         negotiating,
         closed,
         lost,
