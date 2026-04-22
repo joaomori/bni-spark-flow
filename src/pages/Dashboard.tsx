@@ -125,6 +125,7 @@ const Dashboard = () => {
       'waiting_return',
       'future_contact',
       'waiting_signature',
+      'waiting_form',
       'negotiating'
     ];
 
