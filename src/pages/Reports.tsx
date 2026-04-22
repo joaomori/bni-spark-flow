@@ -18,6 +18,7 @@ interface Stats {
   waitingReturn: number;
   futureContact: number;
   waitingSignature: number;
+  waitingForm: number;
   negotiating: number;
   closed: number;
   lost: number;
