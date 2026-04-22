@@ -216,6 +216,7 @@ const Reports = () => {
       const waitingReturn = leads.filter((l) => l.status === "waiting_return").length;
       const futureContact = leads.filter((l) => l.status === "future_contact").length;
       const waitingSignature = leads.filter((l) => l.status === "waiting_signature").length;
+      const waitingForm = leads.filter((l) => l.status === "waiting_form").length;
       const negotiating = leads.filter((l) => l.status === "negotiating").length;
       const closed = leads.filter((l) => l.status === "closed").length;
       const lost = leads.filter((l) => l.status === "lost").length;
