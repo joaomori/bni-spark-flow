@@ -186,7 +186,7 @@ const Dashboard = () => {
   const conversionRate = stats.total > 0 ? ((stats.closed / stats.total) * 100).toFixed(0) : 0;
   const inProgressCount = stats.new + stats.contacted + stats.interviewScheduled + 
     stats.interviewDone + stats.scheduledInterview + stats.waitingReturn + 
-    stats.futureContact + stats.waitingSignature + stats.negotiating;
+    stats.futureContact + stats.waitingSignature + stats.waitingForm + stats.negotiating;
 
   const statusColors: Record<string, string> = {
     new: "bg-accent text-accent-foreground",
