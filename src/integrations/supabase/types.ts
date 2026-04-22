@@ -267,6 +267,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_candidate_qr_team: {
+        Args: { p_qr_date: string; p_team_id: string }
+        Returns: {
+          id: string
+          name: string
+          region_name: string
+        }[]
+      }
       get_user_region: { Args: { _user_id: string }; Returns: string }
       get_user_team: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -275,6 +283,20 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      submit_candidate_qr: {
+        Args: {
+          p_company?: string
+          p_email?: string
+          p_invited_by?: string
+          p_name: string
+          p_notes?: string
+          p_phone: string
+          p_qr_date: string
+          p_specialty?: string
+          p_team_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
