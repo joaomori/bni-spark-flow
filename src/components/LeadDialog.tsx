@@ -253,6 +253,7 @@ export function LeadDialog({ open, onOpenChange, lead }: LeadDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="waiting_signature">Aguardando Assinatura</SelectItem>
+                  <SelectItem value="waiting_form">Aguardando Formulário</SelectItem>
                   <SelectItem value="declined">Aguardando Oportunidade</SelectItem>
                   <SelectItem value="waiting_return">Aguardando Retorno</SelectItem>
                   <SelectItem value="contacted">Contato Feito</SelectItem>

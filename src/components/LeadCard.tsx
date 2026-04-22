@@ -25,6 +25,7 @@ interface LeadCardProps {
 
 const statusColors: Record<string, string> = {
   waiting_signature: "bg-warning text-warning-foreground",
+  waiting_form: "bg-warning text-warning-foreground",
   declined: "bg-warning text-warning-foreground",
   waiting_return: "bg-muted text-muted-foreground",
   contacted: "bg-primary text-primary-foreground",
@@ -40,6 +41,7 @@ const statusColors: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   waiting_signature: "Aguardando Assinatura",
+  waiting_form: "Aguardando Formulário",
   declined: "Aguardando Oportunidade",
   waiting_return: "Aguardando Retorno",
   contacted: "Contato Feito",

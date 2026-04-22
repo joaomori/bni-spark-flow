@@ -25,6 +25,7 @@ const Dashboard = () => {
     waitingReturn: 0,
     futureContact: 0,
     waitingSignature: 0,
+    waitingForm: 0,
     negotiating: 0,
     closed: 0,
     lost: 0,
@@ -125,6 +126,7 @@ const Dashboard = () => {
       'waiting_return',
       'future_contact',
       'waiting_signature',
+      'waiting_form',
       'negotiating'
     ];
 
@@ -166,6 +168,7 @@ const Dashboard = () => {
         waitingReturn: leads.filter((l) => l.status === "waiting_return").length,
         futureContact: leads.filter((l) => l.status === "future_contact").length,
         waitingSignature: leads.filter((l) => l.status === "waiting_signature").length,
+        waitingForm: leads.filter((l) => l.status === "waiting_form").length,
         negotiating: leads.filter((l) => l.status === "negotiating").length,
         closed: leads.filter((l) => l.status === "closed").length,
         lost: leads.filter((l) => l.status === "lost").length,
@@ -183,7 +186,7 @@ const Dashboard = () => {
   const conversionRate = stats.total > 0 ? ((stats.closed / stats.total) * 100).toFixed(0) : 0;
   const inProgressCount = stats.new + stats.contacted + stats.interviewScheduled + 
     stats.interviewDone + stats.scheduledInterview + stats.waitingReturn + 
-    stats.futureContact + stats.waitingSignature + stats.negotiating;
+    stats.futureContact + stats.waitingSignature + stats.waitingForm + stats.negotiating;
 
   const statusColors: Record<string, string> = {
     new: "bg-accent text-accent-foreground",
@@ -194,12 +197,14 @@ const Dashboard = () => {
     waiting_return: "bg-muted text-muted-foreground",
     future_contact: "bg-secondary text-secondary-foreground",
     waiting_signature: "bg-warning text-warning-foreground",
+    waiting_form: "bg-warning text-warning-foreground",
     negotiating: "bg-warning text-warning-foreground",
     declined: "bg-warning text-warning-foreground",
   };
 
   const statusLabels: Record<string, string> = {
     waiting_signature: "Aguardando Assinatura",
+    waiting_form: "Aguardando Formulário",
     declined: "Aguardando Oportunidade",
     waiting_return: "Aguardando Retorno",
     contacted: "Contato Feito",
@@ -221,6 +226,7 @@ const Dashboard = () => {
     { name: "Aguardando Retorno", value: stats.waitingReturn, percentage: ((stats.waitingReturn / stats.total) * 100).toFixed(1) },
     { name: "Contato Futuro", value: stats.futureContact, percentage: ((stats.futureContact / stats.total) * 100).toFixed(1) },
     { name: "Aguardando Assinatura", value: stats.waitingSignature, percentage: ((stats.waitingSignature / stats.total) * 100).toFixed(1) },
+    { name: "Aguardando Formulário", value: stats.waitingForm, percentage: ((stats.waitingForm / stats.total) * 100).toFixed(1) },
     { name: "Em Negociação", value: stats.negotiating, percentage: ((stats.negotiating / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Ganho", value: stats.closed, percentage: ((stats.closed / stats.total) * 100).toFixed(1) },
     { name: "Finalizado Perdido", value: stats.lost, percentage: ((stats.lost / stats.total) * 100).toFixed(1) },

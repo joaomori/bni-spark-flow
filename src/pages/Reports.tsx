@@ -18,6 +18,7 @@ interface Stats {
   waitingReturn: number;
   futureContact: number;
   waitingSignature: number;
+  waitingForm: number;
   negotiating: number;
   closed: number;
   lost: number;
@@ -50,6 +51,7 @@ const Reports = () => {
     waitingReturn: 0,
     futureContact: 0,
     waitingSignature: 0,
+    waitingForm: 0,
     negotiating: 0,
     closed: 0,
     lost: 0,
@@ -214,6 +216,7 @@ const Reports = () => {
       const waitingReturn = leads.filter((l) => l.status === "waiting_return").length;
       const futureContact = leads.filter((l) => l.status === "future_contact").length;
       const waitingSignature = leads.filter((l) => l.status === "waiting_signature").length;
+      const waitingForm = leads.filter((l) => l.status === "waiting_form").length;
       const negotiating = leads.filter((l) => l.status === "negotiating").length;
       const closed = leads.filter((l) => l.status === "closed").length;
       const lost = leads.filter((l) => l.status === "lost").length;
@@ -290,6 +293,7 @@ const Reports = () => {
         waitingReturn,
         futureContact,
         waitingSignature,
+        waitingForm,
         negotiating,
         closed,
         lost,
@@ -314,6 +318,7 @@ const Reports = () => {
     { name: "Aguardando Retorno", value: stats.waitingReturn, color: "#6b7280" },
     { name: "Contato Futuro", value: stats.futureContact, color: "#8b5cf6" },
     { name: "Aguardando Assinatura", value: stats.waitingSignature, color: "#f97316" },
+    { name: "Aguardando Formulário", value: stats.waitingForm, color: "#fb923c" },
     { name: "Em Negociação", value: stats.negotiating, color: "#eab308" },
     { name: "Finalizado Ganho", value: stats.closed, color: "#22c55e" },
     { name: "Finalizado Perdido", value: stats.lost, color: "#ef4444" },

@@ -44,6 +44,7 @@ interface LeadKanbanProps {
 
 const statusColumns = [
   { id: "waiting_signature", label: "Aguardando Assinatura", color: "bg-warning" },
+  { id: "waiting_form", label: "Aguardando Formulário", color: "bg-warning" },
   { id: "declined", label: "Aguardando Oportunidade", color: "bg-warning" },
   { id: "waiting_return", label: "Aguardando Retorno", color: "bg-muted" },
   { id: "contacted", label: "Contato Feito", color: "bg-primary" },
