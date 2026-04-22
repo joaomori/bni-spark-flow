@@ -204,6 +204,7 @@ const Dashboard = () => {
 
   const statusLabels: Record<string, string> = {
     waiting_signature: "Aguardando Assinatura",
+    waiting_form: "Aguardando Formulário",
     declined: "Aguardando Oportunidade",
     waiting_return: "Aguardando Retorno",
     contacted: "Contato Feito",
