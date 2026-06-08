@@ -295,13 +295,16 @@ export type Database = {
       }
       submit_candidate_qr: {
         Args: {
+          p_cnpj?: string
           p_company?: string
+          p_cpf?: string
           p_email?: string
           p_invited_by?: string
           p_name: string
           p_notes?: string
           p_phone: string
           p_qr_date: string
+          p_razao_social?: string
           p_specialty?: string
           p_team_id: string
         }
