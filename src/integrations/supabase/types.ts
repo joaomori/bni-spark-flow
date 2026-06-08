@@ -55,7 +55,9 @@ export type Database = {
       leads: {
         Row: {
           assigned_to: string | null
+          cnpj: string | null
           company: string | null
+          cpf: string | null
           created_at: string
           created_by: string
           decline_reason: string | null
@@ -66,6 +68,7 @@ export type Database = {
           next_contact_date: string | null
           notes: string | null
           phone: string | null
+          razao_social: string | null
           region_id: string
           source: string | null
           specialty: string | null
@@ -75,7 +78,9 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          cnpj?: string | null
           company?: string | null
+          cpf?: string | null
           created_at?: string
           created_by: string
           decline_reason?: string | null
@@ -86,6 +91,7 @@ export type Database = {
           next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
+          razao_social?: string | null
           region_id: string
           source?: string | null
           specialty?: string | null
@@ -95,7 +101,9 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          cnpj?: string | null
           company?: string | null
+          cpf?: string | null
           created_at?: string
           created_by?: string
           decline_reason?: string | null
@@ -106,6 +114,7 @@ export type Database = {
           next_contact_date?: string | null
           notes?: string | null
           phone?: string | null
+          razao_social?: string | null
           region_id?: string
           source?: string | null
           specialty?: string | null
